@@ -1,5 +1,4 @@
 use starknet::ContractAddress;
-use stark_sprouts::models::water::{WaterState};
 
 // says plants lose 1pt of water every 30 seconds
 const WATER_LOSS_RATE: u64 = 1; // 1pt per time_unit
@@ -23,28 +22,56 @@ struct Plant {
 }
 
 trait PlantTrait {
-    fn get_max_growth_level(self: PlantType) -> u8;
+    /// Wipes the plant's data
+    fn wipe(ref self: Plant);
+    /// Returns the max growth level for the plant
+    fn get_max_growth_level(ref self: PlantType) -> u8;
+    /// Asserts that the plant is dead
+    fn assert_dead(ref self: Plant);
+    /// Asserts that the plant is alive
+    fn assert_alive(ref self: Plant);
+
+    /// Top off the plants water level
+    fn water_plant(ref self: Plant);
+
     /// Updates the water level of the plant
     /// @dev Water level drops by WATER_LOSS_RATE every WATER_TIME_UNIT seconds
-    fn update_water_level(self: Plant) -> Plant;
+    fn update_water_level(ref self: Plant);
     /// Kills the plant
-    fn kill_plant(self: Plant) -> Plant;
+    fn kill_plant(ref self: Plant);
     /// Grows the plant amount of levels
-    fn grow(self: Plant, amount: u8) -> Plant;
+    fn grow(ref self: Plant, amount: u8);
 }
 
 impl PlantImpl of PlantTrait {
-    fn kill_plant(mut self: Plant) -> Plant {
-        Plant {
-            growth_stage: 0,
-            water_level: 0,
-            planted_at: 0,
-            last_watered: 0,
-            plant_type: PlantType::None,
-        }
+    fn wipe(ref self: Plant) {
+        self.plant_type = PlantType::None;
+        self.growth_stage = 0;
+        self.water_level = 0;
+        self.planted_at = 0;
+        self.last_watered = 0;
     }
 
-    fn get_max_growth_level(self: PlantType) -> u8 {
+    fn assert_dead(ref self: Plant) {
+        assert(self.plant_type == PlantType::Dead, 'Plant is alive');
+    }
+
+    fn assert_alive(ref self: Plant) {
+        assert(self.plant_type != PlantType::Dead, 'Plant is dead');
+    }
+
+    fn water_plant(ref self: Plant) {
+        self.assert_alive();
+        self.water_level = 100;
+        self.last_watered = starknet::get_block_timestamp();
+    }
+
+
+    fn kill_plant(ref self: Plant) {
+        self.plant_type = PlantType::Dead;
+    }
+
+    fn get_max_growth_level(ref self: PlantType) -> u8 {
         match self {
             PlantType::None => 0,
             PlantType::Bell => 24,
@@ -60,31 +87,33 @@ impl PlantImpl of PlantTrait {
             PlantType::Sprout => 24,
             PlantType::Violet => 24,
             PlantType::Zigzag => 14,
+            PlantType::Dead => 0,
         }
     }
 
-    fn update_water_level(mut self: Plant) -> Plant {
+    fn update_water_level(ref self: Plant) {
+        self.assert_alive();
         let time_since_last_water = starknet::get_block_timestamp() - self.last_watered;
-        let water_loss = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
+        let water_loss: u64 = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
 
-        if water_loss < self.water_level.into() {
+        let current_water_level: u8 = self.water_level;
+
+        if water_loss < current_water_level.into() {
             self.water_level -= water_loss.try_into().unwrap();
-            self
         } else {
             self.kill_plant()
         }
     }
 
-    fn grow(mut self: Plant, amount: u8) -> Plant {
+    fn grow(ref self: Plant, amount: u8) {
+        self.assert_alive();
         let max_growth_level = self.plant_type.get_max_growth_level();
         let new_growth_stage = self.growth_stage + amount;
 
         if new_growth_stage < max_growth_level {
             self.growth_stage = new_growth_stage;
-            self
         } else {
             self.growth_stage = max_growth_level;
-            self
         }
     }
 }
@@ -105,6 +134,51 @@ enum PlantType {
     Sprout,
     Violet,
     Zigzag,
+    Dead,
+}
+
+impl PlantTypeIntoFelt252 of Into<PlantType, felt252> {
+    fn into(self: PlantType) -> felt252 {
+        match self {
+            PlantType::None => 0,
+            PlantType::Bell => 1,
+            PlantType::Bulba => 2,
+            PlantType::Cactus => 3,
+            PlantType::Chamomile => 4,
+            PlantType::Fern => 5,
+            PlantType::Lily => 6,
+            PlantType::Mushroom => 7,
+            PlantType::Rose => 8,
+            PlantType::Salvia => 9,
+            PlantType::Spiral => 10,
+            PlantType::Sprout => 11,
+            PlantType::Violet => 12,
+            PlantType::Zigzag => 13,
+            PlantType::Dead => 0,
+        }
+    }
+}
+
+impl Felt252IntoPlantType of Into<felt252, PlantType> {
+    fn into(self: felt252) -> PlantType {
+        match self {
+            0 => PlantType::None,
+            1 => PlantType::Bell,
+            2 => PlantType::Bulba,
+            3 => PlantType::Cactus,
+            4 => PlantType::Chamomile,
+            5 => PlantType::Fern,
+            6 => PlantType::Lily,
+            7 => PlantType::Mushroom,
+            8 => PlantType::Rose,
+            9 => PlantType::Salvia,
+            10 => PlantType::Spiral,
+            11 => PlantType::Sprout,
+            12 => PlantType::Violet,
+            13 => PlantType::Zigzag,
+            _ => PlantType::None,
+        }
+    }
 }
 
 

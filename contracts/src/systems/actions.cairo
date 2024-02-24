@@ -1,18 +1,24 @@
 // define the interface
 #[starknet::interface]
 trait IActions<TContractState> {
-    // new 
-
-    /// Updates a user's garden state. 
+    /// Updates a player's garden state
     fn update_garden(self: @TContractState, player: starknet::ContractAddress);
+
+    /// Remove a rock from the garden
+    fn remove_rock(self: @TContractState, cell_index: u16);
+
+    /// Remove a dead plant from the garden 
+    fn remove_dead_plant(self: @TContractState, cell_index: u16);
+
+    /// Top off the water level fro an array of garden indexes
+    fn water_plants(self: @TContractState, cell_indexes: Array<u16>);
+
 
     // plants the seed types at the given garden indexes
     // array.lengths :=
-    fn plant_seeds(self: @TContractState, seeds: Array<usize>, garden_indexes: Array<u8>);
-    // waters the plants at the given garden indexes
-    fn water_plants(self: @TContractState, garden_indexes: Array<u8>);
+    fn plant_seeds(self: @TContractState, seeds: Array<usize>, cell_indexes: Array<u16>);
     // harvest the seeds from the plants at the given garden indexes, mints seed tokens (1155) to player
-    fn harvest_plants(self: @TContractState, garden_indexes: Array<u8>);
+    fn harvest_plants(self: @TContractState, cell_indexes: Array<u16>);
 }
 
 // dojo decorator
@@ -20,10 +26,9 @@ trait IActions<TContractState> {
 mod actions {
     use super::IActions;
 
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use stark_sprouts::models::{
-        position::{Position, Vec2}, moves::{Moves, Direction}, garden_cell::{GardenCell},
-        plant::{Plant, PlantType, PlantImpl}, water::{WaterState}
+        garden_cell::{GardenCell, GardenCellImpl}, plant::{Plant, PlantType, PlantImpl},
     };
 
     // declaring custom event struct
@@ -32,20 +37,27 @@ mod actions {
     enum Event {
         // new
         PlantDied: PlantDied,
+        RockRemoved: RockRemoved,
+        DeadPlantRemoved: DeadPlantRemoved,
         PlantsWatered: PlantsWatered,
         PlantsHarvested: PlantsHarvested,
-        // old
-        Moved: Moved,
     }
 
-    // old
+
     #[derive(Drop, starknet::Event)]
-    struct Moved {
+    struct RockRemoved {
+        #[key]
         player: ContractAddress,
-        direction: Direction
+        garden_cell: GardenCell,
     }
 
-    // new
+    #[derive(Drop, starknet::Event)]
+    struct DeadPlantRemoved {
+        #[key]
+        player: ContractAddress,
+        garden_cell: GardenCell,
+    }
+
     #[derive(Drop, starknet::Event)]
     struct PlantDied {
         #[key]
@@ -56,14 +68,14 @@ mod actions {
     #[derive(Drop, starknet::Event)]
     struct PlantsWatered {
         #[key]
-        user: ContractAddress,
+        player: ContractAddress,
         timestamp: u64,
-        garden_indexes: Span<usize>,
+        cell_indexes: Span<u16>,
     }
 
     #[derive(Drop, starknet::Event)]
     struct PlantsHarvested {
-        garden_indexes: Span<usize>,
+        cell_indexes: Span<u16>,
     }
 
     // RockRemoved: RockRemoved,    
@@ -85,11 +97,11 @@ mod actions {
                     let mut garden_cell: GardenCell = get!(
                         world, (player, cell_index), (GardenCell,)
                     );
-                    /// If the cell has a plant
-                    if garden_cell.plant.plant_type != PlantType::None {
-                        /// Update water level
-                        garden_cell.plant = garden_cell.plant.update_water_level();
-                        if garden_cell.plant.plant_type == PlantType::None {
+                    /// If the cell has a plant, update its water level
+                    if garden_cell.has_plant() {
+                        garden_cell.plant.update_water_level();
+                        /// Check if plant is dead
+                        if garden_cell.plant.plant_type == PlantType::Dead {
                             emit!(world, PlantDied { player, garden_cell });
                         }
                         /// Update garden_cell
@@ -100,11 +112,62 @@ mod actions {
             }
         }
 
+        fn remove_rock(self: @ContractState, cell_index: u16) {
+            let world = self.world_dispatcher.read();
+            let player = get_caller_address();
+
+            let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+
+            assert(garden_cell.has_rock, 'No rock to remove');
+            garden_cell.remove_rock();
+
+            set!(world, (garden_cell,));
+            emit!(world, RockRemoved { player, garden_cell });
+        }
+
+        fn remove_dead_plant(self: @ContractState, cell_index: u16) {
+            let world = self.world_dispatcher.read();
+            let player = get_caller_address();
+
+            let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+
+            assert(garden_cell.has_plant(), 'No dead plant to remove');
+            garden_cell.remove_dead_plant();
+
+            set!(world, (garden_cell,));
+            emit!(world, DeadPlantRemoved { player, garden_cell });
+        }
 
         // Water an array of garden indexes
-        // @dev Watering a plant will increase its water state, by 1 or to the maximum water state?
-        // @dev Grow plant to proper state if not dead
-        fn water_plants(self: @ContractState, garden_indexes: Array<u8>) {} // .
+        fn water_plants(self: @ContractState, mut cell_indexes: Array<u16>) { //.
+            let world = self.world_dispatcher.read();
+            let player = get_caller_address();
+            let mut watered_cells = array![];
+
+            loop {
+                match cell_indexes.pop_front() {
+                    Option::Some(cell_index) => {
+                        let mut garden_cell: GardenCell = get!(
+                            world, (player, cell_index), (GardenCell,)
+                        );
+
+                        if garden_cell.has_plant() {
+                            garden_cell.plant.water_plant();
+                            set!(world, (garden_cell,));
+                            watered_cells.append(cell_index);
+                        }
+                    },
+                    Option::None => { break; }
+                }
+            };
+
+            emit!(
+                world,
+                PlantsWatered {
+                    player, timestamp: get_block_timestamp(), cell_indexes: watered_cells.span()
+                }
+            );
+        } // .
         // Access the world dispatcher for reading.
         // top up water state: auto-quench
 
@@ -112,7 +175,7 @@ mod actions {
 
         /////////////
 
-        fn plant_seeds(self: @ContractState, seeds: Array<usize>, garden_indexes: Array<u8>) {}
-        fn harvest_plants(self: @ContractState, garden_indexes: Array<u8>) {}
+        fn plant_seeds(self: @ContractState, seeds: Array<usize>, cell_indexes: Array<u16>) {}
+        fn harvest_plants(self: @ContractState, cell_indexes: Array<u16>) {}
     }
 }
