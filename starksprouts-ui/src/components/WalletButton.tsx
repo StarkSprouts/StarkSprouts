@@ -14,8 +14,7 @@ function WalletConnected() {
 
   return (
     <div>
-      <span>Connected: {shortenedAddress}</span>
-      <button onClick={() => disconnect()}>Disconnect</button>
+      <button onClick={() => disconnect()}>{shortenedAddress}</button>
     </div>
   );
 }
@@ -25,7 +24,6 @@ function ConnectWallet() {
 
   return (
     <div>
-      <span>Choose a wallet: </span>
       {connectors.map((connector) => {
         return (
           <Button
@@ -41,7 +39,7 @@ function ConnectWallet() {
   );
 }
 
-export default function WalletBar() {
+export default function WalletButton() {
   const { address } = useAccount();
 
   return address ? <WalletConnected /> : <ConnectWallet />;
