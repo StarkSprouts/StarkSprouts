@@ -65,11 +65,11 @@ export async function setupWorld(provider: DojoProvider) {
       cellIndexes,
     }: {
       account: Account;
-      cellIndexes: BigNumberish; // NOTE: unsure about this
+      cellIndexes: number[];
     }) => {
       try {
         return await provider.execute(account, contract_name, "water_plants", [
-          cellIndexes,
+          ...cellIndexes,
         ]);
       } catch (error) {
         console.error("Error watering plants:", error);
@@ -83,13 +83,13 @@ export async function setupWorld(provider: DojoProvider) {
       cellIndexes,
     }: {
       account: Account;
-      seeds: BigNumberish;
-      cellIndexes: BigNumberish;
+      seeds: number[];
+      cellIndexes: number[];
     }) => {
       try {
         return await provider.execute(account, contract_name, "plant_seeds", [
-          seeds,
-          cellIndexes,
+          ...seeds,
+          ...cellIndexes,
         ]);
       } catch (error) {
         console.error("Error planting seeds:", error);
@@ -102,14 +102,14 @@ export async function setupWorld(provider: DojoProvider) {
       cellIndexes,
     }: {
       account: Account;
-      cellIndexes: BigNumberish;
+      cellIndexes: number[];
     }) => {
       try {
         return await provider.execute(
           account,
           contract_name,
           "harvest_plants",
-          [cellIndexes]
+          [...cellIndexes]
         );
       } catch (error) {
         console.error("Error harvesting plants:", error);
