@@ -1,4 +1,17 @@
 "use client";
+import { GardenScene } from "@/scene/GardenScene";
+
+const Garden: React.FC = () => {
+  return (
+    <div className="w-screen h-screen">
+      <GardenScene />
+    </div>
+  );
+};
+
+export default Garden;
+
+/*
 import WalletButton from "@/components/WalletButton";
 import GardenContainer from "@/components/garden/GardenContainer";
 import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
@@ -34,3 +47,4 @@ function DisconnectedView() {
     </div>
   );
 }
+*/
