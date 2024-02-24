@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dojoengine/react": "0.5.11-alpha.0",
     "@starknet-react/chains": "^0.1.0",
     "@starknet-react/core": "^2.1.0",
     "get-starknet-core": "^3.2.0",
