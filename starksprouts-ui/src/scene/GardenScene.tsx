@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { getGardenTile } from "@/utils/garden";
-import { shouldPlacePlant } from "@/utils/plant";
+import { shouldPlacePlant, getPlantImage } from "@/utils/plant";
 
 export const GardenScene: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ export const GardenScene: React.FC = () => {
 
           // adding plants
           if (shouldPlacePlant({ x, y, gridSize })) {
-            const plantTexture = loader.load("/plants/salvia/salvia_20.png");
+            const plantTexture = loader.load(getPlantImage("salvia", 0));
             const plantGeometry = new THREE.PlaneGeometry(tileSize, tileSize);
             const plantMaterial = new THREE.MeshBasicMaterial({
               map: plantTexture,

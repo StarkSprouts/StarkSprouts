@@ -42,7 +42,7 @@ export const getGardenTile = (
 }
 
 
-export const gardenTiles = {
+const gardenTiles = {
     grass: {
         0: "/TileSet/Grass/Grass_00.png", 
         1: "/TileSet/Grass/Grass_01.png",
