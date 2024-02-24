@@ -947,9 +947,9 @@
   },
   "contracts": [
     {
-      "name": "dojo_starter::systems::actions::actions",
-      "address": "0x297bde19ca499fd8a39dd9bedbcd881a47f7b8f66c19478ce97d7de89e6112e",
-      "class_hash": "0x4b06e12ebbf2ff414fe24830053486ab23f4331da4f52d86eb1edbbf078340f",
+      "name": "stark_sprouts::systems::actions::actions",
+      "address": null,
+      "class_hash": "0xee3a1e1bab8f788a8fadef92a9e0b2d9c949c89e118e491ff9e46939b04e62",
       "abi": [
         {
           "type": "impl",
@@ -986,52 +986,59 @@
         {
           "type": "impl",
           "name": "ActionsImpl",
-          "interface_name": "dojo_starter::systems::actions::IActions"
-        },
-        {
-          "type": "enum",
-          "name": "dojo_starter::models::moves::Direction",
-          "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
-            {
-              "name": "Left",
-              "type": "()"
-            },
-            {
-              "name": "Right",
-              "type": "()"
-            },
-            {
-              "name": "Up",
-              "type": "()"
-            },
-            {
-              "name": "Down",
-              "type": "()"
-            }
-          ]
+          "interface_name": "stark_sprouts::systems::actions::IActions"
         },
         {
           "type": "interface",
-          "name": "dojo_starter::systems::actions::IActions",
+          "name": "stark_sprouts::systems::actions::IActions",
           "items": [
             {
               "type": "function",
-              "name": "spawn",
-              "inputs": [],
+              "name": "update_garden",
+              "inputs": [
+                {
+                  "name": "player",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
               "outputs": [],
               "state_mutability": "view"
             },
             {
               "type": "function",
-              "name": "move",
+              "name": "plant_seeds",
               "inputs": [
                 {
-                  "name": "direction",
-                  "type": "dojo_starter::models::moves::Direction"
+                  "name": "seeds",
+                  "type": "core::array::Array::<core::integer::u32>"
+                },
+                {
+                  "name": "garden_indexes",
+                  "type": "core::array::Array::<core::integer::u8>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "water_plants",
+              "inputs": [
+                {
+                  "name": "garden_indexes",
+                  "type": "core::array::Array::<core::integer::u8>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "harvest_plants",
+              "inputs": [
+                {
+                  "name": "garden_indexes",
+                  "type": "core::array::Array::<core::integer::u8>"
                 }
               ],
               "outputs": [],
@@ -1098,8 +1105,219 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "stark_sprouts::models::plant::PlantType",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Bell",
+              "type": "()"
+            },
+            {
+              "name": "Bulba",
+              "type": "()"
+            },
+            {
+              "name": "Cactus",
+              "type": "()"
+            },
+            {
+              "name": "Chamomile",
+              "type": "()"
+            },
+            {
+              "name": "Fern",
+              "type": "()"
+            },
+            {
+              "name": "Lily",
+              "type": "()"
+            },
+            {
+              "name": "Mushroom",
+              "type": "()"
+            },
+            {
+              "name": "Rose",
+              "type": "()"
+            },
+            {
+              "name": "Salvia",
+              "type": "()"
+            },
+            {
+              "name": "Spiral",
+              "type": "()"
+            },
+            {
+              "name": "Sprout",
+              "type": "()"
+            },
+            {
+              "name": "Violet",
+              "type": "()"
+            },
+            {
+              "name": "Zigzag",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "stark_sprouts::models::plant::Plant",
+          "members": [
+            {
+              "name": "plant_type",
+              "type": "stark_sprouts::models::plant::PlantType"
+            },
+            {
+              "name": "growth_stage",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "water_level",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "planted_at",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "last_watered",
+              "type": "core::integer::u64"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "stark_sprouts::models::garden_cell::GardenCell",
+          "members": [
+            {
+              "name": "player_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "cell_index",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "has_rock",
+              "type": "core::bool"
+            },
+            {
+              "name": "plant",
+              "type": "stark_sprouts::models::plant::Plant"
+            }
+          ]
+        },
+        {
           "type": "event",
-          "name": "dojo_starter::systems::actions::actions::Moved",
+          "name": "stark_sprouts::systems::actions::actions::PlantDied",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "player",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "garden_cell",
+              "type": "stark_sprouts::models::garden_cell::GardenCell",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::integer::u32>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::integer::u32>"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "stark_sprouts::systems::actions::actions::PlantsWatered",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "user",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "timestamp",
+              "type": "core::integer::u64",
+              "kind": "data"
+            },
+            {
+              "name": "garden_indexes",
+              "type": "core::array::Span::<core::integer::u32>",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "stark_sprouts::systems::actions::actions::PlantsHarvested",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "garden_indexes",
+              "type": "core::array::Span::<core::integer::u32>",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "stark_sprouts::models::moves::Direction",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Left",
+              "type": "()"
+            },
+            {
+              "name": "Right",
+              "type": "()"
+            },
+            {
+              "name": "Up",
+              "type": "()"
+            },
+            {
+              "name": "Down",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "stark_sprouts::systems::actions::actions::Moved",
           "kind": "struct",
           "members": [
             {
@@ -1109,14 +1327,14 @@
             },
             {
               "name": "direction",
-              "type": "dojo_starter::models::moves::Direction",
+              "type": "stark_sprouts::models::moves::Direction",
               "kind": "data"
             }
           ]
         },
         {
           "type": "event",
-          "name": "dojo_starter::systems::actions::actions::Event",
+          "name": "stark_sprouts::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
             {
@@ -1125,8 +1343,23 @@
               "kind": "nested"
             },
             {
+              "name": "PlantDied",
+              "type": "stark_sprouts::systems::actions::actions::PlantDied",
+              "kind": "nested"
+            },
+            {
+              "name": "PlantsWatered",
+              "type": "stark_sprouts::systems::actions::actions::PlantsWatered",
+              "kind": "nested"
+            },
+            {
+              "name": "PlantsHarvested",
+              "type": "stark_sprouts::systems::actions::actions::PlantsHarvested",
+              "kind": "nested"
+            },
+            {
               "name": "Moved",
-              "type": "dojo_starter::systems::actions::actions::Moved",
+              "type": "stark_sprouts::systems::actions::actions::Moved",
               "kind": "nested"
             }
           ]
@@ -1139,7 +1372,194 @@
   ],
   "models": [
     {
-      "name": "dojo_starter::models::moves::moves",
+      "name": "stark_sprouts::models::garden_cell::garden_cell",
+      "members": [
+        {
+          "name": "player_address",
+          "type": "ContractAddress",
+          "key": true
+        },
+        {
+          "name": "cell_index",
+          "type": "u16",
+          "key": true
+        },
+        {
+          "name": "has_rock",
+          "type": "bool",
+          "key": false
+        },
+        {
+          "name": "plant",
+          "type": "Plant",
+          "key": false
+        }
+      ],
+      "class_hash": "0x519c5ad7d1baf89e775f9db64eb05e741778dd5d73d68b9e2046b8c2d76b71a",
+      "abi": [
+        {
+          "type": "function",
+          "name": "name",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::felt252"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "unpacked_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "packed_size",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u32"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::integer::u8>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::integer::u8>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "layout",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::integer::u8>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::felt252>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::felt252>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<core::array::Span::<core::felt252>>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::introspect::Struct",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>",
+          "members": [
+            {
+              "name": "snapshot",
+              "type": "@core::array::Array::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "dojo::database::introspect::Enum",
+          "members": [
+            {
+              "name": "name",
+              "type": "core::felt252"
+            },
+            {
+              "name": "attrs",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "children",
+              "type": "core::array::Span::<(core::felt252, core::array::Span::<core::felt252>)>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "dojo::database::introspect::Ty",
+          "variants": [
+            {
+              "name": "Primitive",
+              "type": "core::felt252"
+            },
+            {
+              "name": "Struct",
+              "type": "dojo::database::introspect::Struct"
+            },
+            {
+              "name": "Enum",
+              "type": "dojo::database::introspect::Enum"
+            },
+            {
+              "name": "Tuple",
+              "type": "core::array::Span::<core::array::Span::<core::felt252>>"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "schema",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "dojo::database::introspect::Ty"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "event",
+          "name": "stark_sprouts::models::garden_cell::garden_cell::Event",
+          "kind": "enum",
+          "variants": []
+        }
+      ]
+    },
+    {
+      "name": "stark_sprouts::models::moves::moves",
       "members": [
         {
           "name": "player",
@@ -1157,7 +1577,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x55fef5837f03b257e9f438e5616df9780518c223aeec5009ab4b94886588fc2",
+      "class_hash": "0x35a5e842db8d7cd91012f7433e3983984b47986d26c90129a61d9ec95cb11f4",
       "abi": [
         {
           "type": "function",
@@ -1314,14 +1734,14 @@
         },
         {
           "type": "event",
-          "name": "dojo_starter::models::moves::moves::Event",
+          "name": "stark_sprouts::models::moves::moves::Event",
           "kind": "enum",
           "variants": []
         }
       ]
     },
     {
-      "name": "dojo_starter::models::position::position",
+      "name": "stark_sprouts::models::position::position",
       "members": [
         {
           "name": "player",
@@ -1334,7 +1754,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x429a0a7129035109a18c7c3d723ca7de1420bed3ce7cfdec0d7accc62943ec",
+      "class_hash": "0x5039317f2038239b7d263ff99d654a5eee5740ba9ab482d15e36d3e462cebfc",
       "abi": [
         {
           "type": "function",
@@ -1491,7 +1911,7 @@
         },
         {
           "type": "event",
-          "name": "dojo_starter::models::position::position::Event",
+          "name": "stark_sprouts::models::position::position::Event",
           "kind": "enum",
           "variants": []
         }

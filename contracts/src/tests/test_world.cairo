@@ -9,7 +9,7 @@ mod tests {
     use dojo::test_utils::{spawn_test_world, deploy_contract};
 
     // import test utils
-    use dojo_starter::{
+    use stark_sprouts::{
         systems::{actions::{actions, IActionsDispatcher, IActionsDispatcherTrait}},
         models::{position::{Position, Vec2, position}, moves::{Moves, Direction, moves}}
     };

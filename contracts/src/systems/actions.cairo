@@ -3,16 +3,16 @@
 trait IActions<TContractState> {
     // new 
 
+    /// Updates a user's garden state. 
+    fn update_garden(self: @TContractState, player: starknet::ContractAddress);
+
     // plants the seed types at the given garden indexes
     // array.lengths :=
-    fn plant_seeds(self: @TContractState, seeds: Array<usize>, garden_indexes: Array<usize>);
+    fn plant_seeds(self: @TContractState, seeds: Array<usize>, garden_indexes: Array<u8>);
     // waters the plants at the given garden indexes
-    fn water_plants(self: @TContractState, garden_indexes: Array<usize>);
+    fn water_plants(self: @TContractState, garden_indexes: Array<u8>);
     // harvest the seeds from the plants at the given garden indexes, mints seed tokens (1155) to player
-    fn harvest_plants(self: @TContractState, garden_indexes: Array<usize>);
-    // old
-    fn spawn(self: @TContractState);
-    fn move(self: @TContractState, direction: dojo_starter::models::moves::Direction);
+    fn harvest_plants(self: @TContractState, garden_indexes: Array<u8>);
 }
 
 // dojo decorator
@@ -21,15 +21,19 @@ mod actions {
     use super::IActions;
 
     use starknet::{ContractAddress, get_caller_address};
-    use dojo_starter::models::{position::{Position, Vec2}, moves::{Moves, Direction}};
+    use stark_sprouts::models::{
+        position::{Position, Vec2}, moves::{Moves, Direction}, garden_cell::{GardenCell},
+        plant::{Plant, PlantType, PlantImpl}, water::{WaterState}
+    };
 
     // declaring custom event struct
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
         // new
-        PlantWatered: PlantWatered,
-        PlantHarvested: PlantHarvested,
+        PlantDied: PlantDied,
+        PlantsWatered: PlantsWatered,
+        PlantsHarvested: PlantsHarvested,
         // old
         Moved: Moved,
     }
@@ -43,6 +47,13 @@ mod actions {
 
     // new
     #[derive(Drop, starknet::Event)]
+    struct PlantDied {
+        #[key]
+        player: ContractAddress,
+        garden_cell: GardenCell,
+    }
+
+    #[derive(Drop, starknet::Event)]
     struct PlantsWatered {
         #[key]
         user: ContractAddress,
@@ -52,103 +63,56 @@ mod actions {
 
     #[derive(Drop, starknet::Event)]
     struct PlantsHarvested {
-        garden_indexes: Vec<usize>,
+        garden_indexes: Span<usize>,
     }
 
-    // old
-    fn next_position(mut position: Position, direction: Direction) -> Position {
-        match direction {
-            Direction::None => { return position; },
-            Direction::Left => { position.vec.x -= 1; },
-            Direction::Right => { position.vec.x += 1; },
-            Direction::Up => { position.vec.y -= 1; },
-            Direction::Down => { position.vec.y += 1; },
-        };
-        position
-    }
-
+    // RockRemoved: RockRemoved,    
 
     // impl: implement functions specified in trait
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
         // new
-        fn water_plants(self: @ContractState, garden_indexes: Array<usize>) {
+        fn update_garden(self: @ContractState, player: starknet::ContractAddress) {
             // Access the world dispatcher for reading.
             let world = self.world_dispatcher.read();
 
-            // Get the address of the current caller, possibly the player's address.
-            let player = get_caller_address();
-
-            // Retrieve the player's current position from the world.
-            let position = get!(world, player, (Position));
-
-            // Retrieve the player's move data, e.g., how many moves they have left.
-            let moves = get!(world, player, (Moves));
-
-            // Update the world state with the new data.
-            // 1. Set players moves to 10
-            // 2. Move the player's position 100 units in both the x and y direction.
-            set!(
-                world,
-                (
-                    Moves { player, remaining: 100, last_direction: Direction::None },
-                    Position { player, vec: Vec2 { x: 10, y: 10 } },
-                )
-            );
+            let mut cell_index = 0_u16;
+            loop {
+                if cell_index >= 225 {
+                    break;
+                } else {
+                    /// Get the garden cell
+                    let mut garden_cell: GardenCell = get!(
+                        world, (player, cell_index), (GardenCell,)
+                    );
+                    /// If the cell has a plant
+                    if garden_cell.plant.plant_type != PlantType::None {
+                        /// Update water level
+                        garden_cell.plant = garden_cell.plant.update_water_level();
+                        if garden_cell.plant.plant_type == PlantType::None {
+                            emit!(world, PlantDied { player, garden_cell });
+                        }
+                        /// Update garden_cell
+                        set!(world, (garden_cell));
+                    }
+                }
+                cell_index += 1;
+            }
         }
 
-        // old
-        // ContractState is defined by system decorator expansion
-        fn spawn(self: @ContractState) {
-            // Access the world dispatcher for reading.
-            let world = self.world_dispatcher.read();
 
-            // Get the address of the current caller, possibly the player's address.
-            let player = get_caller_address();
+        // Water an array of garden indexes
+        // @dev Watering a plant will increase its water state, by 1 or to the maximum water state?
+        // @dev Grow plant to proper state if not dead
+        fn water_plants(self: @ContractState, garden_indexes: Array<u8>) {} // .
+        // Access the world dispatcher for reading.
+        // top up water state: auto-quench
 
-            // Retrieve the player's current position from the world.
-            let position = get!(world, player, (Position));
+        // check time from last water, and upgrade plant if needed
 
-            // Retrieve the player's move data, e.g., how many moves they have left.
-            let moves = get!(world, player, (Moves));
+        /////////////
 
-            // Update the world state with the new data.
-            // 1. Set players moves to 10
-            // 2. Move the player's position 100 units in both the x and y direction.
-            set!(
-                world,
-                (
-                    Moves { player, remaining: 100, last_direction: Direction::None },
-                    Position { player, vec: Vec2 { x: 10, y: 10 } },
-                )
-            );
-        }
-
-        // Implementation of the move function for the ContractState struct.
-        fn move(self: @ContractState, direction: Direction) {
-            // Access the world dispatcher for reading.
-            let world = self.world_dispatcher.read();
-
-            // Get the address of the current caller, possibly the player's address.
-            let player = get_caller_address();
-
-            // Retrieve the player's current position and moves data from the world.
-            let (mut position, mut moves) = get!(world, player, (Position, Moves));
-
-            // Deduct one from the player's remaining moves.
-            moves.remaining -= 1;
-
-            // Update the last direction the player moved in.
-            moves.last_direction = direction;
-
-            // Calculate the player's next position based on the provided direction.
-            let next = next_position(position, direction);
-
-            // Update the world state with the new moves data and position.
-            set!(world, (moves, next));
-
-            // Emit an event to the world to notify about the player's move.
-            emit!(world, Moved { player, direction });
-        }
+        fn plant_seeds(self: @ContractState, seeds: Array<usize>, garden_indexes: Array<u8>) {}
+        fn harvest_plants(self: @ContractState, garden_indexes: Array<u8>) {}
     }
 }
