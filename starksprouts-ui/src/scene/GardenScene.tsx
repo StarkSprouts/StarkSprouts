@@ -27,7 +27,7 @@ export const GardenScene: React.FC = () => {
         0.1,
         2000
       );
-      camera.position.set(0, 15, 0);
+      camera.position.set(0, 12, 0);
       camera.lookAt(0, 0, 0);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -67,53 +67,13 @@ export const GardenScene: React.FC = () => {
       // Clean up the event listener when the component is unmounted
       return () => {
         window.removeEventListener("resize", handleResize);
+        scene.clear();
+        renderer.dispose();
+        if (containerRef.current) {
+          containerRef.current.removeChild(renderer.domElement);
+        }
       };
     }
   }, []);
   return <div ref={containerRef} />;
 };
-/*
-function GardenTiles() {
-  // Define the size of the grid
-  const gridSize = 15;
-  // Define the size of each tile
-  const tileSize = 2;
-
-  // Create an array to hold all the tiles
-  let tiles = [];
-
-  for (let x = 0; x < gridSize; x++) {
-    for (let y = 0; y < gridSize; y++) {
-      const texture = useLoader(TextureLoader, getGardenTile({ x, y }));
-      // Calculate the position of each tile
-      // Assuming the center of the grid is at (0, 0), adjust positions accordingly
-      const positionX = x * tileSize - (gridSize * tileSize) / 2 + tileSize / 2;
-      const positionY = y * tileSize - (gridSize * tileSize) / 2 + tileSize / 2;
-
-      // Create a tile at the calculated position
-      const tile = (
-        <mesh key={`${x}-${y}`} position={[positionX, positionY, 0]}>
-          <planeGeometry attach="geometry" args={[tileSize, tileSize]} />
-          <meshBasicMaterial attach="material" map={texture} />
-        </mesh>
-      );
-
-      // Add the tile to the array of tiles
-      tiles.push(tile);
-    }
-  }
-
-  // Return all the tiles as a group
-  return <group>{tiles}</group>;
-}
-
-function Plants() {
-  const plantTexture = useLoader(TextureLoader, "/plants/salvia/salvia_17.png");
-  return (
-    <mesh position={[1, 1, 0.1]}>
-      <planeGeometry attach="geometry" args={[0.5, 0.5]} />
-      <meshBasicMaterial attach="material" map={plantTexture} />
-    </mesh>
-  );
-}
-*/
