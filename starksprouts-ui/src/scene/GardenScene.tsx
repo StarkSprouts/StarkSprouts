@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
+import { getGardenTile } from "@/utils/garden";
 
 export const GardenScene: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,9 +25,9 @@ export const GardenScene: React.FC = () => {
         75,
         window.innerWidth / window.innerHeight,
         0.1,
-        1000
+        2000
       );
-      camera.position.set(0, 50, 0);
+      camera.position.set(0, 15, 0);
       camera.lookAt(0, 0, 0);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -34,14 +35,19 @@ export const GardenScene: React.FC = () => {
 
       containerRef.current.appendChild(renderer.domElement);
 
+      // for loading garden textures
+      const loader = new THREE.TextureLoader();
+
       // create grid of tiles
       const tileSize = 1;
       const gridSize = 15;
       for (let x = -gridSize / 2; x < gridSize / 2; x++) {
         for (let y = -gridSize / 2; y < gridSize / 2; y++) {
+          console.log(`X: ${x}, Y: ${y}`);
+          const texture = loader.load(getGardenTile({ x, y, gridSize }));
           const geometry = new THREE.PlaneGeometry(tileSize, tileSize);
           const material = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
+            map: texture,
             side: THREE.DoubleSide,
           });
           const tile = new THREE.Mesh(geometry, material);

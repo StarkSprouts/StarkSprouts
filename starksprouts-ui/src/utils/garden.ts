@@ -1,26 +1,52 @@
 
 
-export function getGardenTile({ x, y }: { x: number, y: number }) {
+export const getGardenTile = (
+    { x, y, gridSize }: 
+    { x: number, y: number, gridSize: number }
+) => {
 
-    // depending on the position, get correct tile
+    const maxX = gridSize / 2 - 1;
+    const maxY = gridSize / 2 - 1;
+    const minX = -gridSize / 2;
+    const minY = -gridSize / 2;
 
-    // corner tiles 
+    // top left corner 
+    if (x === minX && y === minY) return gardenTiles.sand.topLeftCorner;
 
-    // bottom tiles 
+    // top right corner
+    if (x === maxX && y === minY) return gardenTiles.sand.topRightCorner;
 
-    // right side tiles 
+    // bottom left corner
+    if (x === minX && y === maxY) return gardenTiles.sand.bottomLeftCorner;
 
-    // left side tiles
+    // bottom right corner
+    if (x === maxX && y === maxY) return gardenTiles.sand.bottomRightCorner;
 
-    return gardenTiles.sand[0];
+    // top row
+    if (y === minY) return gardenTiles.sand.topRow;
+
+    // bottom row
+    if (y === maxY) return gardenTiles.sand.bottomRow;
+
+    // left column
+    if (x === minX) return gardenTiles.sand.leftColumn;
+
+    // right column
+    if (x === maxX) return gardenTiles.sand.rightColumn;
+
+    // randomly choose center tile 
+    const random = Math.random();
+    if (random < 0.33) return gardenTiles.sand.center1;
+    if (random < 0.66) return gardenTiles.sand.center2;
+    return gardenTiles.sand.center3;
 }
 
 
 export const gardenTiles = {
     grass: {
-        0: "/TileSet/Grass/Grass_00.png",
+        0: "/TileSet/Grass/Grass_00.png", 
         1: "/TileSet/Grass/Grass_01.png",
-        2: "/TileSet/Grass/Grass_02.png",
+        2: "/TileSet/Grass/Grass_02.png", 
         3: "/TileSet/Grass/Grass_03.png",
         4: "/TileSet/Grass/Grass_04.png",
         5: "/TileSet/Grass/Grass_05.png",
@@ -41,23 +67,17 @@ export const gardenTiles = {
         20: "/TileSet/Grass/Grass_20.png",
     },
     sand: {
-        0: "/TileSet/Sand/Sand_00.png",
-        1: "/TileSet/Sand/Sand_01.png",
-        2: "/TileSet/Sand/Sand_02.png",
-        3: "/TileSet/Sand/Sand_03.png",
-        4: "/TileSet/Sand/Sand_04.png",
-        5: "/TileSet/Sand/Sand_05.png",
-        6: "/TileSet/Sand/Sand_06.png",
-        7: "/TileSet/Sand/Sand_07.png",
-        8: "/TileSet/Sand/Sand_08.png",
-        9: "/TileSet/Sand/Sand_09.png",
-        10: "/TileSet/Sand/Sand_10.png",
-        11: "/TileSet/Sand/Sand_11.png",
-        12: "/TileSet/Sand/Sand_12.png",
-        13: "/TileSet/Sand/Sand_13.png",
-        14: "/TileSet/Sand/Sand_14.png",
-        15: "/TileSet/Sand/Sand_15.png",
-        16: "/TileSet/Sand/Sand_16.png",
+        topLeftCorner: "/TileSet/Sand/Sand_00.png",
+        topRow: "/TileSet/Sand/Sand_01.png",
+        topRightCorner: "/TileSet/Sand/Sand_02.png",
+        leftColumn: "/TileSet/Sand/Sand_06.png",
+        rightColumn: "/TileSet/Sand/Sand_08.png",
+        center1: "/TileSet/Sand/Sand_07.png",
+        center2: "/TileSet/Sand/Sand_15.png",
+        center3: "/TileSet/Sand/Sand_16.png",
+        bottomRow: "/TileSet/Sand/Sand_13.png",
+        bottomLeftCorner: "/TileSet/Sand/Sand_12.png",
+        bottomRightCorner: "/TileSet/Sand/Sand_14.png",
     }
 }
 
