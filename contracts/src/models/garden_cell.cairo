@@ -4,7 +4,7 @@ use stark_sprouts::models::plant::{Plant, PlantType, PlantTrait, PlantImpl};
 #[derive(Model, Copy, Drop, Serde)]
 struct GardenCell {
     #[key]
-    player_address: ContractAddress,
+    player: ContractAddress,
     #[key]
     cell_index: u16, // 0-224
     has_rock: bool,
