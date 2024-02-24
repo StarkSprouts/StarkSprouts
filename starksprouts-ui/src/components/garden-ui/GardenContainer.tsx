@@ -4,11 +4,11 @@ import GardenCell from "./GardenCell";
 export default function GardenContainer() {
   return (
     <main className="flex ">
-      <div className="grid grid-cols-15 gap-1">
+      <div className="grid grid-cols-15">
         {Array(15)
           .fill(0)
           .map((_, row) => (
-            <div key={row} className="flex justify-evenly">
+            <div key={row} className="flex justify-between">
               {Array(15)
                 .fill(0)
                 .map((_, col) => (
