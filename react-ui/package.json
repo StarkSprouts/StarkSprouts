@@ -9,7 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dojoengine/core": "0.5.11-alpha.0",
+    "@dojoengine/create-burner": "0.5.11-alpha.0",
     "@dojoengine/react": "0.5.11-alpha.0",
+    "@dojoengine/recs": "^0.1.35",
+    "@dojoengine/state": "0.5.11-alpha.0",
+    "@dojoengine/torii-client": "0.5.11-alpha.0",
+    "@dojoengine/utils": "0.5.11-alpha.0",
     "@react-three/fiber": "^8.15.16",
     "@starknet-react/chains": "^0.1.0",
     "@starknet-react/core": "^2.1.0",
@@ -21,10 +27,10 @@
     "three": "^0.161.0"
   },
   "devDependencies": {
-    "@types/three": "^0.161.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/three": "^0.161.2",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.2",

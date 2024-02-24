@@ -1,7 +1,7 @@
 {
   "world": {
     "name": "dojo::world::world",
-    "address": "0x28f5999ae62fec17c09c52a800e244961dba05251f5aaf923afabd9c9804d1a",
+    "address": null,
     "class_hash": "0x5ac623f0c96059936bd2d0904bdd31799e430fe08a0caff7a5f497260b16497",
     "abi": [
       {

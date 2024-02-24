@@ -26,7 +26,7 @@ export const GardenScene: React.FC = () => {
         75,
         window.innerWidth / window.innerHeight,
         0.1,
-        2000
+        2000,
       );
       camera.position.set(0, 12, 0);
       camera.lookAt(0, 0, 0);

@@ -1,6 +1,4 @@
-
 export function getPlantImage(plantType: string, growthStage: number): string {
-
   // create random number between 0 and 13
   const random: number = Math.floor(Math.random() * 24);
   console.log("random", random);
@@ -8,15 +6,25 @@ export function getPlantImage(plantType: string, growthStage: number): string {
   return plants.salvia[random];
 }
 
-export function shouldPlacePlant({x, y, gridSize}: {x: number, y: number, gridSize: number}): boolean {
+export function shouldPlacePlant({
+  x,
+  y,
+  gridSize,
+}: {
+  x: number;
+  y: number;
+  gridSize: number;
+}): boolean {
   // dont place plants on the edges
   if (
-    x === gridSize / 2 - 1 || 
-    x === -gridSize / 2 || 
-    y === gridSize / 2 - 1 || 
-    y === -gridSize / 2) return false;
+    x === gridSize / 2 - 1 ||
+    x === -gridSize / 2 ||
+    y === gridSize / 2 - 1 ||
+    y === -gridSize / 2
+  )
+    return false;
 
-  return true
+  return true;
 }
 
 const plants = {
@@ -46,5 +54,5 @@ const plants = {
     22: "/plants/salvia/salvia_22.png",
     23: "/plants/salvia/salvia_23.png",
     24: "/plants/salvia/salvia_24.png",
-  } as { [key: number]: string},
-}
+  } as { [key: number]: string },
+};
