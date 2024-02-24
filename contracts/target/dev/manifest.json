@@ -949,7 +949,7 @@
     {
       "name": "stark_sprouts::systems::actions::actions",
       "address": null,
-      "class_hash": "0xee3a1e1bab8f788a8fadef92a9e0b2d9c949c89e118e491ff9e46939b04e62",
+      "class_hash": "0x6f455d979fa307683a7eebb3b52528a4f27ec6808322523eeda1804a1d6c202",
       "abi": [
         {
           "type": "impl",
@@ -1006,15 +1006,23 @@
             },
             {
               "type": "function",
-              "name": "plant_seeds",
+              "name": "remove_rock",
               "inputs": [
                 {
-                  "name": "seeds",
-                  "type": "core::array::Array::<core::integer::u32>"
-                },
+                  "name": "cell_index",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "remove_dead_plant",
+              "inputs": [
                 {
-                  "name": "garden_indexes",
-                  "type": "core::array::Array::<core::integer::u8>"
+                  "name": "cell_index",
+                  "type": "core::integer::u16"
                 }
               ],
               "outputs": [],
@@ -1025,8 +1033,24 @@
               "name": "water_plants",
               "inputs": [
                 {
-                  "name": "garden_indexes",
-                  "type": "core::array::Array::<core::integer::u8>"
+                  "name": "cell_indexes",
+                  "type": "core::array::Array::<core::integer::u16>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "plant_seeds",
+              "inputs": [
+                {
+                  "name": "seeds",
+                  "type": "core::array::Array::<core::integer::u32>"
+                },
+                {
+                  "name": "cell_indexes",
+                  "type": "core::array::Array::<core::integer::u16>"
                 }
               ],
               "outputs": [],
@@ -1037,8 +1061,8 @@
               "name": "harvest_plants",
               "inputs": [
                 {
-                  "name": "garden_indexes",
-                  "type": "core::array::Array::<core::integer::u8>"
+                  "name": "cell_indexes",
+                  "type": "core::array::Array::<core::integer::u16>"
                 }
               ],
               "outputs": [],
@@ -1177,6 +1201,10 @@
             {
               "name": "Zigzag",
               "type": "()"
+            },
+            {
+              "name": "Dead",
+              "type": "()"
             }
           ]
         },
@@ -1246,12 +1274,46 @@
           ]
         },
         {
+          "type": "event",
+          "name": "stark_sprouts::systems::actions::actions::RockRemoved",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "player",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "garden_cell",
+              "type": "stark_sprouts::models::garden_cell::GardenCell",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "stark_sprouts::systems::actions::actions::DeadPlantRemoved",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "player",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "garden_cell",
+              "type": "stark_sprouts::models::garden_cell::GardenCell",
+              "kind": "data"
+            }
+          ]
+        },
+        {
           "type": "struct",
-          "name": "core::array::Span::<core::integer::u32>",
+          "name": "core::array::Span::<core::integer::u16>",
           "members": [
             {
               "name": "snapshot",
-              "type": "@core::array::Array::<core::integer::u32>"
+              "type": "@core::array::Array::<core::integer::u16>"
             }
           ]
         },
@@ -1261,7 +1323,7 @@
           "kind": "struct",
           "members": [
             {
-              "name": "user",
+              "name": "player",
               "type": "core::starknet::contract_address::ContractAddress",
               "kind": "key"
             },
@@ -1271,8 +1333,8 @@
               "kind": "data"
             },
             {
-              "name": "garden_indexes",
-              "type": "core::array::Span::<core::integer::u32>",
+              "name": "cell_indexes",
+              "type": "core::array::Span::<core::integer::u16>",
               "kind": "data"
             }
           ]
@@ -1283,51 +1345,8 @@
           "kind": "struct",
           "members": [
             {
-              "name": "garden_indexes",
-              "type": "core::array::Span::<core::integer::u32>",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "stark_sprouts::models::moves::Direction",
-          "variants": [
-            {
-              "name": "None",
-              "type": "()"
-            },
-            {
-              "name": "Left",
-              "type": "()"
-            },
-            {
-              "name": "Right",
-              "type": "()"
-            },
-            {
-              "name": "Up",
-              "type": "()"
-            },
-            {
-              "name": "Down",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "stark_sprouts::systems::actions::actions::Moved",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "player",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "direction",
-              "type": "stark_sprouts::models::moves::Direction",
+              "name": "cell_indexes",
+              "type": "core::array::Span::<core::integer::u16>",
               "kind": "data"
             }
           ]
@@ -1348,6 +1367,16 @@
               "kind": "nested"
             },
             {
+              "name": "RockRemoved",
+              "type": "stark_sprouts::systems::actions::actions::RockRemoved",
+              "kind": "nested"
+            },
+            {
+              "name": "DeadPlantRemoved",
+              "type": "stark_sprouts::systems::actions::actions::DeadPlantRemoved",
+              "kind": "nested"
+            },
+            {
               "name": "PlantsWatered",
               "type": "stark_sprouts::systems::actions::actions::PlantsWatered",
               "kind": "nested"
@@ -1355,11 +1384,6 @@
             {
               "name": "PlantsHarvested",
               "type": "stark_sprouts::systems::actions::actions::PlantsHarvested",
-              "kind": "nested"
-            },
-            {
-              "name": "Moved",
-              "type": "stark_sprouts::systems::actions::actions::Moved",
               "kind": "nested"
             }
           ]
@@ -1395,7 +1419,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x519c5ad7d1baf89e775f9db64eb05e741778dd5d73d68b9e2046b8c2d76b71a",
+      "class_hash": "0x2f8fcf60753daf677af8c91fa56b04a66fae7d900f331d40b573d1b1eeb7004",
       "abi": [
         {
           "type": "function",

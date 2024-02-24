@@ -1,13 +1,6 @@
 use starknet::ContractAddress;
 use stark_sprouts::models::plant::{Plant, PlantType, PlantTrait, PlantImpl};
 
-// #[derive(Model, Drop, Serde)]
-// struct Garden {
-//     #[key]
-//     player_address: ContractAddress,
-//     cells: [GardenCell; 225],
-// }
-
 #[derive(Model, Copy, Drop, Serde)]
 struct GardenCell {
     #[key]
@@ -19,9 +12,42 @@ struct GardenCell {
 }
 
 trait GradenCellTrait {
-    fn remove_rock(self: GardenCell) -> GardenCell;
-    fn plant(self: GardenCell, seed_types: Array<u256>, garden_indexes: Array<u256>) -> GardenCell;
-// fn clear_cell(self: GardenCell) -> GardenCell;
+    fn is_empty(ref self: GardenCell) -> bool;
+    fn has_plant(ref self: GardenCell) -> bool;
+
+    fn remove_rock(ref self: GardenCell);
+    fn remove_dead_plant(ref self: GardenCell);
+    fn plant_seed(ref self: GardenCell, seed_type: u256);
+}
+
+
+impl GardenCellImpl of GradenCellTrait {
+    fn is_empty(ref self: GardenCell) -> bool {
+        return !self.has_rock && self.plant.plant_type == PlantType::None;
+    }
+
+    fn has_plant(ref self: GardenCell) -> bool {
+        return self.plant.plant_type != PlantType::None && !self.has_rock;
+    }
+
+
+    fn remove_rock(ref self: GardenCell) {
+        self.has_rock = false;
+    }
+
+    fn remove_dead_plant(ref self: GardenCell) {
+        self.plant.assert_dead();
+        self.plant.wipe();
+    }
+
+    fn plant_seed(ref self: GardenCell, seed_type: u256) {
+        assert(!self.has_rock, 'GardenCell has a rock');
+        assert(self.plant.plant_type == PlantType::None, 'Garden cell already has a plant');
+    // let plant_type = PlantType::from(seed_types[0]);
+    // let plant = Plant { plant_type: plant_type, garden_indexes: garden_indexes, };
+    // self.plant = plant;
+    // self
+    }
 }
 // #[derive(Serde, Copy, Drop, Introspect)]
 // enum Direction {
