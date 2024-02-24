@@ -7,7 +7,7 @@ export default function Home() {
       <div className="flex flex-row w-screen justify-end p-2">
         <div>
           <Button>
-            <a href="/garden">Launch App</a>
+            <a href="/game">Launch App</a>
           </Button>
         </div>
       </div>
