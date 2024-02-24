@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { getGardenTile } from "@/utils/garden";
+import { shouldPlacePlant } from "@/utils/plant";
 
 export const GardenScene: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,10 +41,10 @@ export const GardenScene: React.FC = () => {
 
       // create grid of tiles
       const tileSize = 1;
-      const gridSize = 15;
+      const gridSize = 16;
       for (let x = -gridSize / 2; x < gridSize / 2; x++) {
         for (let y = -gridSize / 2; y < gridSize / 2; y++) {
-          console.log(`X: ${x}, Y: ${y}`);
+          // adding garden tiles
           const texture = loader.load(getGardenTile({ x, y, gridSize }));
           const geometry = new THREE.PlaneGeometry(tileSize, tileSize);
           const material = new THREE.MeshBasicMaterial({
@@ -54,6 +55,22 @@ export const GardenScene: React.FC = () => {
           tile.rotation.x = -Math.PI / 2;
           tile.position.set(x * tileSize, 0, y * tileSize);
           scene.add(tile);
+
+          // adding plants
+          if (shouldPlacePlant({ x, y, gridSize })) {
+            const plantTexture = loader.load("/plants/salvia/salvia_20.png");
+            const plantGeometry = new THREE.PlaneGeometry(tileSize, tileSize);
+            const plantMaterial = new THREE.MeshBasicMaterial({
+              map: plantTexture,
+              side: THREE.DoubleSide,
+              transparent: true,
+            });
+            const plant = new THREE.Mesh(plantGeometry, plantMaterial);
+            // Adjust the plant's position. This example centers it on the tile and slightly above it.
+            plant.position.set(x * tileSize, 0.01, y * tileSize); // Adjust Y as needed to avoid z-fighting with the tile
+            plant.rotation.x = -Math.PI / 2; // Orient the plant to face up if it's a flat 2D texture
+            scene.add(plant);
+          }
         }
       }
 
