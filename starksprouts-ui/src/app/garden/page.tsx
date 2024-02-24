@@ -1,50 +1,16 @@
 "use client";
-import { Canvas } from "@react-three/fiber";
-import { useLoader } from "@react-three/fiber";
-import { TextureLoader } from "three";
-import { extend } from "@react-three/fiber";
+import { GardenScene } from "@/scene/GardenScene";
 
-export default function Garden() {
+const Garden: React.FC = () => {
   return (
-    <div>
-      <Canvas>
-        <GardenScene />
-      </Canvas>
+    <div className="w-screen h-screen">
+      <GardenScene />
     </div>
   );
-}
+};
 
-function GardenScene() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[0, 10, 10]} intensity={1} />
-      <GardenTiles />
-      <Plants />
-    </>
-  );
-}
+export default Garden;
 
-function GardenTiles() {
-  const texture = useLoader(TextureLoader, "/TileSet/Grass/Grass_01.png");
-
-  return (
-    <mesh position={[0, 0, 0]}>
-      <planeGeometry attach="geometry" args={[1, 1]} />
-      <meshBasicMaterial attach="material" map={texture} />
-    </mesh>
-  );
-}
-
-function Plants() {
-  const plantTexture = useLoader(TextureLoader, "/plants/salvia/salvia_17.png");
-  return (
-    <mesh position={[1, 1, 0.1]}>
-      <planeGeometry attach="geometry" args={[0.5, 0.5]} />
-      <meshBasicMaterial attach="material" map={plantTexture} />
-    </mesh>
-  );
-}
 /*
 import WalletButton from "@/components/WalletButton";
 import GardenContainer from "@/components/garden/GardenContainer";
