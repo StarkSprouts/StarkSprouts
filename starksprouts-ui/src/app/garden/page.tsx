@@ -1,6 +1,6 @@
 "use client";
 import WalletButton from "@/components/WalletButton";
-import GardenContainer from "@/components/garden-ui/GardenContainer";
+import GardenContainer from "@/components/garden/GardenContainer";
 import { useAccount, useConnect, useDisconnect } from "@starknet-react/core";
 
 export default function Garden() {
