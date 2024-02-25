@@ -9,16 +9,33 @@ export async function setupWorld(provider: DojoProvider) {
   function actions() {
     const contract_name = "actions";
 
-    const updateGarden = async ({ account }: { account: Account }) => {
+    const refreshGarden = async ({ account }: { account: Account }) => {
       try {
         return await provider.execute(
           account,
           contract_name,
-          "update_garden",
+          "refresh_garden",
           []
         );
       } catch (error) {
         console.error("Error updating garden:", error);
+        throw error;
+      }
+    };
+
+    const waterPlants = async ({
+      account,
+      cellIndex,
+    }: {
+      account: Account;
+      cellIndex: number;
+    }) => {
+      try {
+        return await provider.execute(account, contract_name, "water_plants", [
+          cellIndex,
+        ]);
+      } catch (error) {
+        console.error("Error watering plants:", error);
         throw error;
       }
     };
@@ -60,36 +77,19 @@ export async function setupWorld(provider: DojoProvider) {
       }
     };
 
-    const waterPlants = async ({
+    const plantSeed = async ({
       account,
-      cellIndexes,
+      seed,
+      cellIndex,
     }: {
       account: Account;
-      cellIndexes: number[];
+      seed: number;
+      cellIndex: number;
     }) => {
       try {
-        return await provider.execute(account, contract_name, "water_plants", [
-          ...cellIndexes,
-        ]);
-      } catch (error) {
-        console.error("Error watering plants:", error);
-        throw error;
-      }
-    };
-
-    const plantSeeds = async ({
-      account,
-      seeds,
-      cellIndexes,
-    }: {
-      account: Account;
-      seeds: number[];
-      cellIndexes: number[];
-    }) => {
-      try {
-        return await provider.execute(account, contract_name, "plant_seeds", [
-          ...seeds,
-          ...cellIndexes,
+        return await provider.execute(account, contract_name, "plant_seed", [
+          seed,
+          cellIndex,
         ]);
       } catch (error) {
         console.error("Error planting seeds:", error);
@@ -97,19 +97,19 @@ export async function setupWorld(provider: DojoProvider) {
       }
     };
 
-    const harvestPlants = async ({
+    const harvestPlant = async ({
       account,
-      cellIndexes,
+      cellIndex,
     }: {
       account: Account;
-      cellIndexes: number[];
+      cellIndex: number;
     }) => {
       try {
         return await provider.execute(
           account,
           contract_name,
           "harvest_plants",
-          [...cellIndexes]
+          [cellIndex]
         );
       } catch (error) {
         console.error("Error harvesting plants:", error);
@@ -118,12 +118,12 @@ export async function setupWorld(provider: DojoProvider) {
     };
 
     return {
-      updateGarden,
+      refreshGarden,
       removeRock,
       removeDeadPlant,
       waterPlants,
-      plantSeeds,
-      harvestPlants,
+      plantSeed,
+      harvestPlant,
     };
   }
   return {
