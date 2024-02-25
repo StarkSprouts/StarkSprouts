@@ -949,7 +949,7 @@
     {
       "name": "stark_sprouts::systems::actions::actions",
       "address": null,
-      "class_hash": "0x6f455d979fa307683a7eebb3b52528a4f27ec6808322523eeda1804a1d6c202",
+      "class_hash": "0x467c50167473b6b1292f6daf6061c81e8b7ab9623979bc4cf39bfa0e6d71d90",
       "abi": [
         {
           "type": "impl",
@@ -989,6 +989,20 @@
           "interface_name": "stark_sprouts::systems::actions::IActions"
         },
         {
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
+            {
+              "name": "low",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "high",
+              "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
           "type": "interface",
           "name": "stark_sprouts::systems::actions::IActions",
           "items": [
@@ -999,6 +1013,18 @@
                 {
                   "name": "player",
                   "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "water_plants",
+              "inputs": [
+                {
+                  "name": "cell_indexes",
+                  "type": "core::array::Array::<core::integer::u16>"
                 }
               ],
               "outputs": [],
@@ -1030,23 +1056,11 @@
             },
             {
               "type": "function",
-              "name": "water_plants",
-              "inputs": [
-                {
-                  "name": "cell_indexes",
-                  "type": "core::array::Array::<core::integer::u16>"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
               "name": "plant_seeds",
               "inputs": [
                 {
                   "name": "seeds",
-                  "type": "core::array::Array::<core::integer::u32>"
+                  "type": "core::array::Array::<core::integer::u256>"
                 },
                 {
                   "name": "cell_indexes",
@@ -1239,7 +1253,7 @@
           "name": "stark_sprouts::models::garden_cell::GardenCell",
           "members": [
             {
-              "name": "player_address",
+              "name": "player",
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
@@ -1253,6 +1267,10 @@
             {
               "name": "plant",
               "type": "stark_sprouts::models::plant::Plant"
+            },
+            {
+              "name": "creation_date",
+              "type": "core::integer::u64"
             }
           ]
         },
@@ -1399,7 +1417,7 @@
       "name": "stark_sprouts::models::garden_cell::garden_cell",
       "members": [
         {
-          "name": "player_address",
+          "name": "player",
           "type": "ContractAddress",
           "key": true
         },
@@ -1417,9 +1435,14 @@
           "name": "plant",
           "type": "Plant",
           "key": false
+        },
+        {
+          "name": "creation_date",
+          "type": "u64",
+          "key": false
         }
       ],
-      "class_hash": "0x2f8fcf60753daf677af8c91fa56b04a66fae7d900f331d40b573d1b1eeb7004",
+      "class_hash": "0x66e443fccbbfe97f2373ddd3e5116bfbbbb4478595da28a3d27fd849ca52c63",
       "abi": [
         {
           "type": "function",
