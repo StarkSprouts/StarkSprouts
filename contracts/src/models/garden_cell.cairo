@@ -7,14 +7,13 @@ struct GardenCell {
     player: ContractAddress,
     #[key]
     cell_index: u16, // 0-224
-    has_rock: bool,
+    has_rock: bool, // discussed enum here, but instead going to move to player stats, that way two rocsk cannot be removed at the same time
     plant: Plant,
-    creation_date: u64,
 }
 
 trait GradenCellTrait {
     fn plot_status(ref self: GardenCell) -> PlotStatus;
-    fn remove_rock(ref self: GardenCell);
+    fn toggle_rock(ref self: GardenCell);
     fn plant_seed(ref self: GardenCell, seed_id: u256, cell_index: u16);
     fn harvest_seed(ref self: GardenCell);
 }
@@ -29,41 +28,39 @@ enum PlotStatus {
 
 
 impl GardenCellImpl of GradenCellTrait {
-    /// Get the status of the GardenCell
+    /// Get the status of the garden cell
     fn plot_status(ref self: GardenCell) -> PlotStatus {
         if self.has_rock {
-            return PlotStatus::Rock;
-        }
-
-        let plant_type: PlantType = self.plant.plant_type;
-        if plant_type == PlantType::None {
-            PlotStatus::Empty
-        } else if plant_type == PlantType::Dead {
+            PlotStatus::Rock
+        } else if self.plant.is_dead {
             PlotStatus::DeadPlant
+        } else if self.plant.plant_type == PlantType::None {
+            PlotStatus::Empty
         } else {
             PlotStatus::AlivePlant
         }
     }
 
-    fn remove_rock(ref self: GardenCell) {
-        self.has_rock = false;
+    /// Toggle if rock in the garden cell
+    fn toggle_rock(ref self: GardenCell) {
+        self.has_rock = !self.has_rock;
     }
+
 
     fn plant_seed(ref self: GardenCell, seed_id: u256, cell_index: u16) {
         let plant_type = Felt252IntoPlantType::into(seed_id.try_into().unwrap());
-        let plant = Plant {
-            plant_type,
-            growth_stage: 0,
-            water_level: 100,
-            planted_at: get_block_timestamp(),
-            last_watered: get_block_timestamp(),
-        };
-    // 'GardenCell has a rock');
-    // assert(self.plant.plant_type == PlantType::None, 'Garden cell already has a plant');
-    // let plant_type = PlantType::from(seed_types[0]);
-    // let plant = Plant { plant_type: plant_type, garden_indexes: garden_indexes, };
-    // self.plant = plant;
-    // self
+        self
+            .plant =
+                Plant {
+                    plant_type,
+                    is_dead: false,
+                    growth_stage: 0,
+                    water_level: 100,
+                    planted_at: get_block_timestamp(),
+                    last_water_date: get_block_timestamp(),
+                    last_harvest_date: 0,
+                    is_harvestable: false,
+                };
     }
 
     fn harvest_seed(
@@ -74,25 +71,13 @@ impl GardenCellImpl of GradenCellTrait {
     // seed_type
     }
 }
-// #[derive(Serde, Copy, Drop, Introspect)]
-// enum Direction {
-//     None,
-//     Left,
-//     Right,
-//     Up,
-//     Down,
-// }
 
-// impl DirectionIntoFelt252 of Into<Direction, felt252> {
-//     fn into(self: Direction) -> felt252 {
-//         match self {
-//             Direction::None => 0,
-//             Direction::Left => 1,
-//             Direction::Right => 2,
-//             Direction::Up => 3,
-//             Direction::Down => 4,
-//         }
-//     }
-// }
 
+#[cfg(test)]
+mod tests {
+    use debug::PrintTrait;
+    use super::{GardenCell, GradenCellTrait, GardenCellImpl, PlotStatus};
+
+    fn setup_garden() {}
+}
 
