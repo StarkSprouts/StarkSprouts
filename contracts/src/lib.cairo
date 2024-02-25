@@ -3,10 +3,7 @@ mod systems {
 }
 
 mod models {
-    // old
-    mod moves;
-    mod position;
-    // new 
+    mod player_stats;
     mod garden_cell;
     mod plant;
 }
