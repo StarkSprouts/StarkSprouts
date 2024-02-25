@@ -122,12 +122,9 @@ export async function setupWorld(provider: DojoProvider) {
       cellIndex: number;
     }) => {
       try {
-        return await provider.execute(
-          account,
-          contract_name,
-          "harvest_plants",
-          [cellIndex]
-        );
+        return await provider.execute(account, contract_name, "harvest_plant", [
+          cellIndex,
+        ]);
       } catch (error) {
         console.error("Error harvesting plants:", error);
         throw error;
