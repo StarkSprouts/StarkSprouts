@@ -1,7 +1,3 @@
-import React, { useRef, useEffect } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Vector3 } from "three";
-import { AssetLoader } from "@/gameComponents/AssetLoader";
 import { Tile } from "@/gameComponents/Tile";
 
 export const WorldScene = () => {
