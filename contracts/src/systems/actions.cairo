@@ -48,6 +48,10 @@ mod actions {
 
     #[generate_trait]
     impl Private of PrivateTrait {
+        fn assert_cell_index_in_bounds(self: @ContractState, cell_index: u16) {
+            assert(cell_index < 225, 'Cell index out of bounds');
+        }
+
         fn has_garden(self: @ContractState) -> bool {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -163,6 +167,7 @@ mod actions {
         /// Water a plant at the given garden index
         fn water_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
             self.refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
@@ -184,6 +189,7 @@ mod actions {
         /// Start rock removal at the given garden index
         fn remove_rock(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -203,6 +209,7 @@ mod actions {
         /// Remove a dead plant from the garden at the given garden index
         fn remove_dead_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -218,6 +225,7 @@ mod actions {
 
         fn plant_seed(self: @ContractState, seed_id: u256, cell_index: u16) {
             self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
             self.refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
@@ -235,6 +243,7 @@ mod actions {
 
         fn harvest_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
             self.refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();

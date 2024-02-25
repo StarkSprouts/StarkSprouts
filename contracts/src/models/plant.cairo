@@ -132,7 +132,7 @@ impl PlantImpl of PlantTrait {
     }
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq, Print)]
 enum PlantType {
     None,
     Bell,

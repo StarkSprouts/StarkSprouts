@@ -949,7 +949,7 @@
     {
       "name": "stark_sprouts::systems::actions::actions",
       "address": null,
-      "class_hash": "0x87a09de0141b3192c4ecac43237f8433bb58764cfa8b6a627a5a5dd3ac1e0c",
+      "class_hash": "0x521642ffb513b3cc0b63ed59cc28c5de1cafc20a25f0f7dc426de90b4650eda",
       "abi": [
         {
           "type": "impl",
