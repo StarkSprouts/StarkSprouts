@@ -20,16 +20,8 @@ trait IActions<TContractState> {
     /// @dev todo: implement token burning
     fn plant_seed(self: @TContractState, seed_id: u256, cell_index: u16);
 
-
-    // implementing 
-
-    /// 
-    /// not implemented yet
-    // plants the seed types at the given garden indexes
-    // array.lengths :=
-    // harvest the seeds from the plants at the given garden indexes, mints seed tokens (1155) to player
+    /// Harvest the plant at the given garden index
     fn harvest_plant(self: @TContractState, cell_index: u16);
-// fn start_garden, creates new garden and randomizes where rocks go
 }
 
 // dojo decorator
