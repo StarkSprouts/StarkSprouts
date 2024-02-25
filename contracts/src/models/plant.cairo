@@ -116,7 +116,7 @@ impl PlantImpl of PlantTrait {
                     self.growth_stage = calculated_growth_stage.try_into().unwrap();
                 } else {
                     self.growth_stage = self.get_max_growth_level();
-                    /// Used for logic in ::harvest()
+                    /// @dev Used for logic in ::harvest()
                     self.last_harvest_date = get_block_timestamp();
                 }
             }
