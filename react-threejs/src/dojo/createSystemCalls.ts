@@ -18,5 +18,136 @@ export function createSystemCalls(
   contractComponents: ContractComponents,
   { GardenCell }: ClientComponents
 ) {
-  return {};
+  const initializeGarden = async (account: Account) => {
+    try {
+      const { transaction_hash } = await client.actions.updateGarden({
+        account,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const removeRock = async (account: Account, cellIndex: number) => {
+    try {
+      const { transaction_hash } = await client.actions.removeRock({
+        account,
+        cellIndex,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const removeDeadPlant = async (account: Account, cellIndex: number) => {
+    try {
+      const { transaction_hash } = await client.actions.removeDeadPlant({
+        account,
+        cellIndex,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const waterPlants = async (account: Account, cellIndexes: number[]) => {
+    try {
+      const { transaction_hash } = await client.actions.waterPlants({
+        account,
+        cellIndexes,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const plantSeeds = async (
+    account: Account,
+    cellIndexes: number[],
+    seeds: number[]
+  ) => {
+    try {
+      const { transaction_hash } = await client.actions.plantSeeds({
+        account,
+        seeds,
+        cellIndexes,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const harvestPlants = async (account: Account, cellIndexes: number[]) => {
+    try {
+      const { transaction_hash } = await client.actions.harvestPlants({
+        account,
+        cellIndexes,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return {
+    initializeGarden,
+    removeRock,
+    removeDeadPlant,
+    waterPlants,
+    plantSeeds,
+    harvestPlants,
+  };
 }
