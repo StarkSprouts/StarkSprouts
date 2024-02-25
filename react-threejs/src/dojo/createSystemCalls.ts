@@ -1,13 +1,7 @@
 import { Account } from "starknet";
 // @ts-ignore
-import { Entity, getComponentValue } from "@dojoengine/recs";
-import { uuid } from "@latticexyz/utils";
 import { ClientComponents } from "./createClientComponents";
-import {
-  getEntityIdFromKeys,
-  getEvents,
-  setComponentsFromEvents,
-} from "@dojoengine/utils";
+import { getEvents, setComponentsFromEvents } from "@dojoengine/utils";
 import { ContractComponents } from "./generated/contractComponents";
 import type { IWorld } from "./generated/generated";
 
@@ -18,9 +12,9 @@ export function createSystemCalls(
   contractComponents: ContractComponents,
   { GardenCell }: ClientComponents
 ) {
-  const initializeGarden = async (account: Account) => {
+  const refreshGarden = async (account: Account) => {
     try {
-      const { transaction_hash } = await client.actions.updateGarden({
+      const { transaction_hash } = await client.actions.refreshGarden({
         account,
       });
 
@@ -77,11 +71,11 @@ export function createSystemCalls(
     }
   };
 
-  const waterPlants = async (account: Account, cellIndexes: number[]) => {
+  const waterPlant = async (account: Account, cellIndex: number) => {
     try {
-      const { transaction_hash } = await client.actions.waterPlants({
+      const { transaction_hash } = await client.actions.waterPlant({
         account,
-        cellIndexes,
+        cellIndex,
       });
 
       setComponentsFromEvents(
@@ -97,16 +91,16 @@ export function createSystemCalls(
     }
   };
 
-  const plantSeeds = async (
+  const plantSeed = async (
     account: Account,
-    cellIndexes: number[],
-    seeds: number[]
+    cellIndex: number,
+    seed: number
   ) => {
     try {
-      const { transaction_hash } = await client.actions.plantSeeds({
+      const { transaction_hash } = await client.actions.plantSeed({
         account,
-        seeds,
-        cellIndexes,
+        seed,
+        cellIndex,
       });
 
       setComponentsFromEvents(
@@ -122,11 +116,11 @@ export function createSystemCalls(
     }
   };
 
-  const harvestPlants = async (account: Account, cellIndexes: number[]) => {
+  const harvestPlant = async (account: Account, cellIndex: number) => {
     try {
-      const { transaction_hash } = await client.actions.harvestPlants({
+      const { transaction_hash } = await client.actions.harvestPlant({
         account,
-        cellIndexes,
+        cellIndex,
       });
 
       setComponentsFromEvents(
@@ -143,11 +137,11 @@ export function createSystemCalls(
   };
 
   return {
-    initializeGarden,
+    refreshGarden,
     removeRock,
     removeDeadPlant,
-    waterPlants,
-    plantSeeds,
-    harvestPlants,
+    waterPlant,
+    plantSeed,
+    harvestPlant,
   };
 }

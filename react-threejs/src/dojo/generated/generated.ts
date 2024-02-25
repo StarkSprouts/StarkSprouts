@@ -23,7 +23,7 @@ export async function setupWorld(provider: DojoProvider) {
       }
     };
 
-    const waterPlants = async ({
+    const waterPlant = async ({
       account,
       cellIndex,
     }: {
@@ -31,11 +31,11 @@ export async function setupWorld(provider: DojoProvider) {
       cellIndex: number;
     }) => {
       try {
-        return await provider.execute(account, contract_name, "water_plants", [
+        return await provider.execute(account, contract_name, "water_plant", [
           cellIndex,
         ]);
       } catch (error) {
-        console.error("Error watering plants:", error);
+        console.error("Error watering plant:", error);
         throw error;
       }
     };
@@ -121,7 +121,7 @@ export async function setupWorld(provider: DojoProvider) {
       refreshGarden,
       removeRock,
       removeDeadPlant,
-      waterPlants,
+      waterPlant,
       plantSeed,
       harvestPlant,
     };
