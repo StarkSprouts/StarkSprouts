@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from "react";
 import { TextureLoader } from "three";
 import { useLoader } from "@react-three/fiber";
-import { tileTextures } from "@/utils/textures";
+//import { tileTextures } from "@/utils/textures";
 
 const AssetsContext = createContext({});
 
@@ -16,8 +16,8 @@ export type AssetsType = {
 
 export const AssetLoader = ({ children }: AssetLoaderProps) => {
   const textures = useLoader(TextureLoader, [
-    tileTextures.grass[15],
-    tileTextures.sand.center1,
+    "src/assets/tiles/Grass/grass_15.png",
+    "src/assets/tiles/Sand/sand_09.png",
   ]);
 
   const assets = {
