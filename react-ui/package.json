@@ -16,6 +16,7 @@
     "@dojoengine/state": "0.5.11-alpha.0",
     "@dojoengine/torii-client": "0.5.11-alpha.0",
     "@dojoengine/utils": "0.5.11-alpha.0",
+    "@latticexyz/utils": "^1.43.0",
     "@react-three/fiber": "^8.15.16",
     "@starknet-react/chains": "^0.1.0",
     "@starknet-react/core": "^2.1.0",
