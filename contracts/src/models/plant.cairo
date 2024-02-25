@@ -13,18 +13,18 @@ struct Plant {
     plant_type: PlantType,
     /// Is the plant dead  
     is_dead: bool,
+    /// Is the plant ready for harvest
+    is_harvestable: bool,
     /// Stage of the plant's growth
     growth_stage: u8, // (0 - max_for_plant_type)
     /// Water level of the plant
     water_level: u8, // (1 - 100)
     /// The time the plant was planted
-    planted_at: u64,
+    planted_date: u64,
     /// The time the plant was last watered
     last_water_date: u64,
     /// The time the plant was last harvested
     last_harvest_date: u64,
-    /// Is plant ready for harvest ?
-    is_harvestable: bool,
 }
 
 trait PlantTrait {
@@ -32,8 +32,6 @@ trait PlantTrait {
     fn reset(ref self: Plant);
     /// Returns the max growth level for the plant
     fn get_max_growth_level(ref self: Plant) -> u8;
-    /// Asserts that the plant is alive
-    fn assert_alive(ref self: Plant); //rm 
     /// Top off the plants water level
     fn water_plant(ref self: Plant);
     /// Updates the water level of the plant
@@ -54,15 +52,11 @@ impl PlantImpl of PlantTrait {
                 is_dead: false,
                 growth_stage: 0,
                 water_level: 0,
-                planted_at: 0,
+                planted_date: 0,
                 last_water_date: 0,
                 last_harvest_date: 0,
                 is_harvestable: false,
             };
-    }
-
-    fn assert_alive(ref self: Plant) {
-        assert(!self.is_dead, 'Plant is dead');
     }
 
     fn water_plant(ref self: Plant) {
@@ -93,9 +87,9 @@ impl PlantImpl of PlantTrait {
     fn update_water_level(ref self: Plant) {
         let time_since_last_water = get_block_timestamp() - self.last_water_date;
         let water_loss: u64 = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
-        let current_water_level: u8 = self.water_level;
+        let current_water_level: u64 = self.water_level.into();
 
-        if water_loss < current_water_level.into() {
+        if water_loss < current_water_level {
             self.water_level -= water_loss.try_into().unwrap();
         } else {
             self.water_level = 0;
@@ -104,18 +98,28 @@ impl PlantImpl of PlantTrait {
     }
 
     fn update_growth(ref self: Plant) {
-        self.assert_alive(); // todo rm 
-        let time_since_planted = get_block_timestamp() - self.planted_at;
-        let calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
+        let current_growth_stage = self.growth_stage.into();
 
-        if calculated_growth_stage <= self.get_max_growth_level().into() {
-            if calculated_growth_stage != self.growth_stage.into() {
-                self.growth_stage = calculated_growth_stage.try_into().unwrap();
+        /// If adult plant
+        if current_growth_stage == self.get_max_growth_level().into() {
+            /// Check plant if harvestable 
+            let time_since_last_harvest = get_block_timestamp() - self.last_harvest_date;
+            if time_since_last_harvest > TIME_FOR_PLANT_TO_GROW {
+                self.set_harvestable();
             }
         } else {
-            self.growth_stage = self.get_max_growth_level();
-            /// Used to simplify logic in ::harvest()
-            self.last_harvest_date = get_block_timestamp();
+            let time_since_planted = get_block_timestamp() - self.planted_date;
+            let calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
+            /// If there is a change in growth stage, update the growth stage
+            if calculated_growth_stage != current_growth_stage { //
+                if calculated_growth_stage < self.get_max_growth_level().into() {
+                    self.growth_stage = calculated_growth_stage.try_into().unwrap();
+                } else {
+                    self.growth_stage = self.get_max_growth_level();
+                    /// Used for logic in ::harvest()
+                    self.last_harvest_date = get_block_timestamp();
+                }
+            }
         }
     }
 
@@ -203,7 +207,7 @@ mod tests {
         Plant {
             growth_stage: 1,
             water_level: 100,
-            planted_at: 111,
+            planted_date: 111,
             last_water_date: 222,
             plant_type: PlantType::Zigzag,
             is_dead: false,
@@ -219,7 +223,7 @@ mod tests {
         plant.reset();
         assert(plant.growth_stage == 0, 'Growth stage should be 0');
         assert(plant.water_level == 0, 'Water level should be 0');
-        assert(plant.planted_at == 0, 'Planted at should be 0');
+        assert(plant.planted_date == 0, 'Planted at should be 0');
         assert(plant.last_water_date == 0, 'Last watered should be 0');
         assert(plant.plant_type == PlantType::None, 'Plant type should be None');
         assert(!plant.is_dead, 'Plant should be alive');

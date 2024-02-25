@@ -81,16 +81,6 @@ mod actions {
                 emit!(world, PlantDied { player, garden_cell });
             }
             garden_cell.plant.update_growth();
-            /// Check if plant is harvestable
-            if garden_cell.plant.growth_stage == garden_cell.plant.get_max_growth_level() {
-                /// Time since last harvest 
-                let time_since_last_harvest = get_block_timestamp()
-                    - garden_cell.plant.last_harvest_date;
-                /// If the plant is harvestable, set the harvestable flag
-                if time_since_last_harvest >= TIME_FOR_PLANT_TO_HARVEST {
-                    garden_cell.plant.set_harvestable();
-                }
-            }
             set!(world, (garden_cell,));
         }
     }

@@ -56,7 +56,7 @@ impl GardenCellImpl of GradenCellTrait {
                     is_dead: false,
                     growth_stage: 0,
                     water_level: 100,
-                    planted_at: get_block_timestamp(),
+                    planted_date: get_block_timestamp(),
                     last_water_date: get_block_timestamp(),
                     last_harvest_date: 0,
                     is_harvestable: false,
