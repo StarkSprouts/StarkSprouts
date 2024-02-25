@@ -40,6 +40,8 @@ mod actions {
     };
     use core::poseidon::{poseidon_hash_span, PoseidonTrait};
 
+    use debug::PrintTrait;
+
 
     const MAX_ROCKS_AT_SPAWN: u8 = 50;
     const TIME_TO_REMOVE_ROCK: u64 = 15; // 15 seconds
@@ -71,15 +73,17 @@ mod actions {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-            /// Lower the plant's water level
-            garden_cell.plant.update_water_level();
-            /// Check if plant died
-            if garden_cell.plot_status() == PlotStatus::DeadPlant {
-                emit!(world, PlantDied { player, garden_cell });
+            if (garden_cell.plot_status() == PlotStatus::AlivePlant) {
+                /// Lower the plant's water level
+                garden_cell.plant.update_water_level();
+                /// Check if plant died
+                if garden_cell.plot_status() == PlotStatus::DeadPlant {
+                    emit!(world, PlantDied { player, garden_cell });
+                }
+                /// Update the plant's growth
+                garden_cell.plant.update_growth();
+                set!(world, (garden_cell,));
             }
-            /// Update the plant's growth
-            garden_cell.plant.update_growth();
-            set!(world, (garden_cell,));
         }
     }
 
