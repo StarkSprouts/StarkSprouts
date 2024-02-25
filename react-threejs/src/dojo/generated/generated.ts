@@ -1,6 +1,6 @@
 // NOTE: in the future this file should be generated, but right now it's manually created
 
-import { Account } from "starknet";
+import { Account, BigNumberish } from "starknet";
 import { DojoProvider } from "@dojoengine/core";
 
 export type IWorld = Awaited<ReturnType<typeof setupWorld>>;
@@ -93,16 +93,19 @@ export async function setupWorld(provider: DojoProvider) {
 
     const plantSeed = async ({
       account,
-      seed,
+      seedLow,
+      seedHigh,
       cellIndex,
     }: {
       account: Account;
-      seed: number;
+      seedLow: number;
+      seedHigh: number;
       cellIndex: number;
     }) => {
       try {
         return await provider.execute(account, contract_name, "plant_seed", [
-          seed,
+          seedLow,
+          seedHigh,
           cellIndex,
         ]);
       } catch (error) {

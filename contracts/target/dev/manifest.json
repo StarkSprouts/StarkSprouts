@@ -1,7 +1,7 @@
 {
   "world": {
     "name": "dojo::world::world",
-    "address": null,
+    "address": "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
     "class_hash": "0x5ac623f0c96059936bd2d0904bdd31799e430fe08a0caff7a5f497260b16497",
     "abi": [
       {
@@ -948,9 +948,31 @@
   "contracts": [
     {
       "name": "stark_sprouts::systems::actions::actions",
-      "address": null,
-      "class_hash": "0x87a09de0141b3192c4ecac43237f8433bb58764cfa8b6a627a5a5dd3ac1e0c",
+      "address": "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
+      "class_hash": "0x32d127ed886f25eef84cabd62e5e3e6a252dcad487b2dbdeb43425a80873512",
       "abi": [
+        {
+          "type": "impl",
+          "name": "DojoResourceProviderImpl",
+          "interface_name": "dojo::world::IDojoResourceProvider"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::world::IDojoResourceProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_resource",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::felt252"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
         {
           "type": "impl",
           "name": "WorldProviderImpl",
@@ -1108,17 +1130,6 @@
               "state_mutability": "external"
             }
           ]
-        },
-        {
-          "type": "function",
-          "name": "dojo_resource",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::felt252"
-            }
-          ],
-          "state_mutability": "view"
         },
         {
           "type": "event",
@@ -1443,40 +1454,12 @@
           "key": false
         }
       ],
-      "class_hash": "0x1b12cb5840c76bb479ee0e7045231adfb73ffd3a37e2b18b1813fbd0a808e12",
+      "class_hash": "0x3ab52b11aff7c64e22b4b0fadb1d06b74ebe506706cd7797f87b1c8240dd128",
       "abi": [
         {
-          "type": "function",
-          "name": "name",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::felt252"
-            }
-          ],
-          "state_mutability": "view"
-        },
-        {
-          "type": "function",
-          "name": "unpacked_size",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::integer::u32"
-            }
-          ],
-          "state_mutability": "view"
-        },
-        {
-          "type": "function",
-          "name": "packed_size",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::integer::u32"
-            }
-          ],
-          "state_mutability": "view"
+          "type": "impl",
+          "name": "DojoModelImpl",
+          "interface_name": "dojo::model::IDojoModel"
         },
         {
           "type": "struct",
@@ -1487,17 +1470,6 @@
               "type": "@core::array::Array::<core::integer::u8>"
             }
           ]
-        },
-        {
-          "type": "function",
-          "name": "layout",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::array::Span::<core::integer::u8>"
-            }
-          ],
-          "state_mutability": "view"
         },
         {
           "type": "struct",
@@ -1588,15 +1560,224 @@
           ]
         },
         {
-          "type": "function",
-          "name": "schema",
-          "inputs": [],
-          "outputs": [
+          "type": "interface",
+          "name": "dojo::model::IDojoModel",
+          "items": [
             {
-              "type": "dojo::database::introspect::Ty"
+              "type": "function",
+              "name": "name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::felt252"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "unpacked_size",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "packed_size",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "layout",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::array::Span::<core::integer::u8>"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "schema",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::database::introspect::Ty"
+                }
+              ],
+              "state_mutability": "view"
             }
-          ],
-          "state_mutability": "view"
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "garden_cellImpl",
+          "interface_name": "stark_sprouts::models::garden_cell::Igarden_cell"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "stark_sprouts::models::plant::PlantType",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Bell",
+              "type": "()"
+            },
+            {
+              "name": "Bulba",
+              "type": "()"
+            },
+            {
+              "name": "Cactus",
+              "type": "()"
+            },
+            {
+              "name": "Chamomile",
+              "type": "()"
+            },
+            {
+              "name": "Fern",
+              "type": "()"
+            },
+            {
+              "name": "Lily",
+              "type": "()"
+            },
+            {
+              "name": "Mushroom",
+              "type": "()"
+            },
+            {
+              "name": "Rose",
+              "type": "()"
+            },
+            {
+              "name": "Salvia",
+              "type": "()"
+            },
+            {
+              "name": "Spiral",
+              "type": "()"
+            },
+            {
+              "name": "Sprout",
+              "type": "()"
+            },
+            {
+              "name": "Violet",
+              "type": "()"
+            },
+            {
+              "name": "Zigzag",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "stark_sprouts::models::plant::Plant",
+          "members": [
+            {
+              "name": "plant_type",
+              "type": "stark_sprouts::models::plant::PlantType"
+            },
+            {
+              "name": "is_dead",
+              "type": "core::bool"
+            },
+            {
+              "name": "is_harvestable",
+              "type": "core::bool"
+            },
+            {
+              "name": "growth_stage",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "water_level",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "planted_date",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "last_water_date",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "last_harvest_date",
+              "type": "core::integer::u64"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "stark_sprouts::models::garden_cell::GardenCell",
+          "members": [
+            {
+              "name": "player",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "cell_index",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "has_rock",
+              "type": "core::bool"
+            },
+            {
+              "name": "plant",
+              "type": "stark_sprouts::models::plant::Plant"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "stark_sprouts::models::garden_cell::Igarden_cell",
+          "items": [
+            {
+              "type": "function",
+              "name": "ensure_abi",
+              "inputs": [
+                {
+                  "name": "model",
+                  "type": "stark_sprouts::models::garden_cell::GardenCell"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            }
+          ]
         },
         {
           "type": "event",
@@ -1635,40 +1816,12 @@
           "key": false
         }
       ],
-      "class_hash": "0x10b5e88a6bcc3646e5a0f6bcd91e1bd67d2d675ba2094fa38546e0b47b0bc67",
+      "class_hash": "0x36b0204721092fb571ed4e60060cf1fe967c8f4b139d84b13e1f84a47e3bfc8",
       "abi": [
         {
-          "type": "function",
-          "name": "name",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::felt252"
-            }
-          ],
-          "state_mutability": "view"
-        },
-        {
-          "type": "function",
-          "name": "unpacked_size",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::integer::u32"
-            }
-          ],
-          "state_mutability": "view"
-        },
-        {
-          "type": "function",
-          "name": "packed_size",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::integer::u32"
-            }
-          ],
-          "state_mutability": "view"
+          "type": "impl",
+          "name": "DojoModelImpl",
+          "interface_name": "dojo::model::IDojoModel"
         },
         {
           "type": "struct",
@@ -1679,17 +1832,6 @@
               "type": "@core::array::Array::<core::integer::u8>"
             }
           ]
-        },
-        {
-          "type": "function",
-          "name": "layout",
-          "inputs": [],
-          "outputs": [
-            {
-              "type": "core::array::Span::<core::integer::u8>"
-            }
-          ],
-          "state_mutability": "view"
         },
         {
           "type": "struct",
@@ -1780,15 +1922,128 @@
           ]
         },
         {
-          "type": "function",
-          "name": "schema",
-          "inputs": [],
-          "outputs": [
+          "type": "interface",
+          "name": "dojo::model::IDojoModel",
+          "items": [
             {
-              "type": "dojo::database::introspect::Ty"
+              "type": "function",
+              "name": "name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::felt252"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "unpacked_size",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "packed_size",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "layout",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::array::Span::<core::integer::u8>"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "schema",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::database::introspect::Ty"
+                }
+              ],
+              "state_mutability": "view"
             }
-          ],
-          "state_mutability": "view"
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "player_statsImpl",
+          "interface_name": "stark_sprouts::models::player_stats::Iplayer_stats"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "stark_sprouts::models::player_stats::PlayerStats",
+          "members": [
+            {
+              "name": "player",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "has_garden",
+              "type": "core::bool"
+            },
+            {
+              "name": "rock_pending",
+              "type": "core::bool"
+            },
+            {
+              "name": "rock_pending_cell_index",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "rock_removal_started_date",
+              "type": "core::integer::u64"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "stark_sprouts::models::player_stats::Iplayer_stats",
+          "items": [
+            {
+              "type": "function",
+              "name": "ensure_abi",
+              "inputs": [
+                {
+                  "name": "model",
+                  "type": "stark_sprouts::models::player_stats::PlayerStats"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            }
+          ]
         },
         {
           "type": "event",
