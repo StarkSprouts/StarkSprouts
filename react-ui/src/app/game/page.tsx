@@ -1,12 +1,15 @@
 "use client";
-import { GardenScene } from "@/scene/GardenScene";
+import { Game } from "@/gameComponents/Game";
+import { WorldScene } from "@/scenes/WorldScene";
 
-const Garden: React.FC = () => {
+const GamePage: React.FC = () => {
   return (
-    <div className="w-screen h-screen">
-      <GardenScene />
+    <div className="flex justify-center items-center w-screen h-screen">
+      <Game>
+        <WorldScene />
+      </Game>
     </div>
   );
 };
 
-export default Garden;
+export default GamePage;

@@ -1,49 +1,4 @@
-export const getGardenTile = ({
-  x,
-  y,
-  gridSize,
-}: {
-  x: number;
-  y: number;
-  gridSize: number;
-}) => {
-  const maxX = gridSize / 2 - 1;
-  const maxY = gridSize / 2 - 1;
-  const minX = -gridSize / 2;
-  const minY = -gridSize / 2;
-
-  // top left corner
-  if (x === minX && y === minY) return gardenTiles.sand.topLeftCorner;
-
-  // top right corner
-  if (x === maxX && y === minY) return gardenTiles.sand.topRightCorner;
-
-  // bottom left corner
-  if (x === minX && y === maxY) return gardenTiles.sand.bottomLeftCorner;
-
-  // bottom right corner
-  if (x === maxX && y === maxY) return gardenTiles.sand.bottomRightCorner;
-
-  // top row
-  if (y === minY) return gardenTiles.sand.topRow;
-
-  // bottom row
-  if (y === maxY) return gardenTiles.sand.bottomRow;
-
-  // left column
-  if (x === minX) return gardenTiles.sand.leftColumn;
-
-  // right column
-  if (x === maxX) return gardenTiles.sand.rightColumn;
-
-  // randomly choose center tile
-  const random = Math.random();
-  if (random < 0.33) return gardenTiles.sand.center1;
-  if (random < 0.66) return gardenTiles.sand.center2;
-  return gardenTiles.sand.center3;
-};
-
-const gardenTiles = {
+export const tileTextures = {
   grass: {
     0: "/TileSet/Grass/Grass_00.png",
     1: "/TileSet/Grass/Grass_01.png",
@@ -66,7 +21,7 @@ const gardenTiles = {
     18: "/TileSet/Grass/Grass_18.png",
     19: "/TileSet/Grass/Grass_19.png",
     20: "/TileSet/Grass/Grass_20.png",
-  },
+  } as { [key: number]: string },
   sand: {
     topLeftCorner: "/TileSet/Sand/Sand_00.png",
     topRow: "/TileSet/Sand/Sand_01.png",
@@ -80,4 +35,34 @@ const gardenTiles = {
     bottomLeftCorner: "/TileSet/Sand/Sand_12.png",
     bottomRightCorner: "/TileSet/Sand/Sand_14.png",
   },
+};
+
+export const plantTextures = {
+  salvia: {
+    0: "/plants/salvia/salvia_00.png",
+    1: "/plants/salvia/salvia_01.png",
+    2: "/plants/salvia/salvia_02.png",
+    3: "/plants/salvia/salvia_03.png",
+    4: "/plants/salvia/salvia_04.png",
+    5: "/plants/salvia/salvia_05.png",
+    6: "/plants/salvia/salvia_06.png",
+    7: "/plants/salvia/salvia_07.png",
+    8: "/plants/salvia/salvia_08.png",
+    9: "/plants/salvia/salvia_09.png",
+    10: "/plants/salvia/salvia_10.png",
+    11: "/plants/salvia/salvia_11.png",
+    12: "/plants/salvia/salvia_12.png",
+    13: "/plants/salvia/salvia_13.png",
+    14: "/plants/salvia/salvia_14.png",
+    15: "/plants/salvia/salvia_15.png",
+    16: "/plants/salvia/salvia_16.png",
+    17: "/plants/salvia/salvia_17.png",
+    18: "/plants/salvia/salvia_18.png",
+    19: "/plants/salvia/salvia_19.png",
+    20: "/plants/salvia/salvia_20.png",
+    21: "/plants/salvia/salvia_21.png",
+    22: "/plants/salvia/salvia_22.png",
+    23: "/plants/salvia/salvia_23.png",
+    24: "/plants/salvia/salvia_24.png",
+  } as { [key: number]: string },
 };
