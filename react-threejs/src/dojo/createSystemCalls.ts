@@ -12,6 +12,25 @@ export function createSystemCalls(
   contractComponents: ContractComponents,
   { GardenCell }: ClientComponents
 ) {
+  const initializeGarden = async (account: Account) => {
+    try {
+      const { transaction_hash } = await client.actions.initializeGarden({
+        account,
+      });
+
+      setComponentsFromEvents(
+        contractComponents,
+        getEvents(
+          await account.waitForTransaction(transaction_hash, {
+            retryInterval: 100,
+          })
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const refreshGarden = async (account: Account) => {
     try {
       const { transaction_hash } = await client.actions.refreshGarden({
@@ -137,6 +156,7 @@ export function createSystemCalls(
   };
 
   return {
+    initializeGarden,
     refreshGarden,
     removeRock,
     removeDeadPlant,

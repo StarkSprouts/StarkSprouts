@@ -6,6 +6,7 @@ export default function TestPage() {
   const {
     setup: {
       systemCalls: {
+        initializeGarden,
         refreshGarden,
         removeRock,
         removeDeadPlant,
@@ -20,7 +21,7 @@ export default function TestPage() {
 
   const handleInitWorld = () => {
     console.log("Init World");
-    refreshGarden(account);
+    initializeGarden(account);
   };
   const handleRemoveRock = () => {
     console.log("Remove Rock");

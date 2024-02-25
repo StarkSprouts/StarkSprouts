@@ -9,6 +9,20 @@ export async function setupWorld(provider: DojoProvider) {
   function actions() {
     const contract_name = "actions";
 
+    const initializeGarden = async ({ account }: { account: Account }) => {
+      try {
+        return await provider.execute(
+          account,
+          contract_name,
+          "initialize_garden",
+          []
+        );
+      } catch (error) {
+        console.error("Error initializing garden:", error);
+        throw error;
+      }
+    };
+
     const updateGarden = async ({ account }: { account: Account }) => {
       try {
         return await provider.execute(
