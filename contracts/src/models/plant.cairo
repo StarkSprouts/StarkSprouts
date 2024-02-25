@@ -23,7 +23,7 @@ struct Plant {
 
 trait PlantTrait {
     /// Wipes the plant's data
-    fn wipe(ref self: Plant);
+    fn reset(ref self: Plant);
     /// Returns the max growth level for the plant
     fn get_max_growth_level(ref self: PlantType) -> u8;
     /// Asserts that the plant is dead
@@ -35,16 +35,14 @@ trait PlantTrait {
     fn water_plant(ref self: Plant);
 
     /// Updates the water level of the plant
-    /// @dev Water level drops by WATER_LOSS_RATE every WATER_TIME_UNIT seconds
     fn update_water_level(ref self: Plant);
-    /// Kills the plant
-    fn kill_plant(ref self: Plant);
+
     /// Grows the plant amount of levels
     fn grow(ref self: Plant, amount: u8);
 }
 
 impl PlantImpl of PlantTrait {
-    fn wipe(ref self: Plant) {
+    fn reset(ref self: Plant) {
         self.plant_type = PlantType::None;
         self.growth_stage = 0;
         self.water_level = 0;
@@ -61,14 +59,8 @@ impl PlantImpl of PlantTrait {
     }
 
     fn water_plant(ref self: Plant) {
-        self.assert_alive();
         self.water_level = 100;
         self.last_watered = starknet::get_block_timestamp();
-    }
-
-
-    fn kill_plant(ref self: Plant) {
-        self.plant_type = PlantType::Dead;
     }
 
     fn get_max_growth_level(ref self: PlantType) -> u8 {
@@ -92,16 +84,14 @@ impl PlantImpl of PlantTrait {
     }
 
     fn update_water_level(ref self: Plant) {
-        self.assert_alive();
         let time_since_last_water = starknet::get_block_timestamp() - self.last_watered;
         let water_loss: u64 = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
-
         let current_water_level: u8 = self.water_level;
 
         if water_loss < current_water_level.into() {
             self.water_level -= water_loss.try_into().unwrap();
         } else {
-            self.kill_plant()
+            self.plant_type = PlantType::Dead;
         }
     }
 
