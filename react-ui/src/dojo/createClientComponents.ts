@@ -11,6 +11,6 @@ export function createClientComponents({
 }) {
   return {
     ...contractComponents,
-    // TODO: add overrides
+    GardenCell: overridableComponent(contractComponents.GardenCell),
   };
 }

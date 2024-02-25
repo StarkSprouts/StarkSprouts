@@ -61,8 +61,8 @@ export async function setup({ ...config }: DojoConfig) {
     contractComponents,
     systemCalls: createSystemCalls(
       { client },
-      contractComponents
-      //clientComponents
+      contractComponents,
+      clientComponents
     ),
     config,
     dojoProvider,

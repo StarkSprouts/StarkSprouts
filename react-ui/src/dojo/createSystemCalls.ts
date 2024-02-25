@@ -15,7 +15,8 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
   { client }: { client: IWorld },
-  contractComponents: ContractComponents
+  contractComponents: ContractComponents,
+  { GardenCell }: ClientComponents
 ) {
   return {};
 }
