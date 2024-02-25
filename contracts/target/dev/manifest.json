@@ -1,7 +1,7 @@
 {
   "world": {
     "name": "dojo::world::world",
-    "address": null,
+    "address": "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
     "class_hash": "0x5ac623f0c96059936bd2d0904bdd31799e430fe08a0caff7a5f497260b16497",
     "abi": [
       {
@@ -948,8 +948,8 @@
   "contracts": [
     {
       "name": "stark_sprouts::systems::actions::actions",
-      "address": null,
-      "class_hash": "0x3160e85816eed3278acfc91366a88279e23cb7b0baf3f4e09c9ba9367287f50",
+      "address": "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
+      "class_hash": "0x58a42fb36ea3a858f0a56a03ac4b29ce8e144db003c23e965e363f0708e647b",
       "abi": [
         {
           "type": "impl",

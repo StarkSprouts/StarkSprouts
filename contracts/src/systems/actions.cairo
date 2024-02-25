@@ -75,11 +75,13 @@ mod actions {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+            /// Lower the plant's water level
             garden_cell.plant.update_water_level();
-            /// Check if plant died when water level updated
+            /// Check if plant died
             if garden_cell.plot_status() == PlotStatus::DeadPlant {
                 emit!(world, PlantDied { player, garden_cell });
             }
+            /// Update the plant's growth
             garden_cell.plant.update_growth();
             set!(world, (garden_cell,));
         }
@@ -89,7 +91,6 @@ mod actions {
     impl ActionsImpl of IActions<ContractState> {
         /// Initializes a player's garden
         fn initialize_garden(self: @ContractState) {
-            /// Does player already have a garden?
             self.assert_player_does_not_have_garden();
 
             let world = self.world_dispatcher.read();
@@ -122,27 +123,28 @@ mod actions {
                 let mut garden_cell: GardenCell = get!(
                     world, (player, random_cell_index), (GardenCell,)
                 );
-                garden_cell.toggle_rock();
+                garden_cell.set_has_rock(true);
                 /// Update the garden cell
                 set!(world, (garden_cell,));
                 i += 1;
             };
+        // todo: mint random seeds 
         }
 
         /// Refresh a player's garden state
         fn refresh_garden(self: @ContractState) {
             self.assert_player_has_garden();
-            // Access the world dispatcher for reading.
+            /// Access the world dispatcher for reading.
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
-
+            /// Loop through the player's garden cells
             let mut cell_index = 0_u16;
             loop {
                 if cell_index == 225 {
                     break;
                 }
                 let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-                /// If the cell has a plant, update its water level
+                /// If the cell has a plant, updates its water level and growth
                 if garden_cell.plot_status() == PlotStatus::AlivePlant {
                     self.refresh_plot(cell_index);
                 }
@@ -158,7 +160,7 @@ mod actions {
                     let mut garden_cell: GardenCell = get!(
                         world, (player, cell_index), (GardenCell,)
                     );
-                    garden_cell.toggle_rock();
+                    garden_cell.set_has_rock(false);
                     player_stats.finish_rock_removal();
                     set!(world, (garden_cell,));
                     set!(world, (player_stats,));
@@ -166,14 +168,13 @@ mod actions {
             }
         }
 
-        // Water a plant at the given garden index
+        /// Water a plant at the given garden index
         fn water_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
-
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
 
             if garden_cell.plot_status() == PlotStatus::AlivePlant {
@@ -188,23 +189,23 @@ mod actions {
         // );
         }
 
-        /// Remove a rock from the garden at the given garden index
+        /// Start rock removal at the given garden index
         fn remove_rock(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
-            self.refresh_plot(cell_index);
+
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
+
             assert(garden_cell.plot_status() == PlotStatus::Rock, 'No rock to remove');
             assert(!player_stats.rock_pending, 'Still removing a rock');
 
             player_stats.start_rock_removal(cell_index);
 
-            set!(world, (garden_cell,));
+            // set!(world, (garden_cell,));
             set!(world, (player_stats,));
-
-            emit!(world, RockRemoved { player, garden_cell });
+        // emit!(world, RockRemoved { player, garden_cell });
         }
 
         /// Remove a dead plant from the garden at the given garden index
@@ -220,7 +221,7 @@ mod actions {
             garden_cell.plant.reset();
 
             set!(world, (garden_cell,));
-            emit!(world, DeadPlantRemoved { player, garden_cell });
+        // emit!(world, DeadPlantRemoved { player, garden_cell });
         }
 
         fn plant_seed(self: @ContractState, seed_id: u256, cell_index: u16) {

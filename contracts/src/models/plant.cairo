@@ -1,9 +1,9 @@
 use starknet::{ContractAddress, get_block_timestamp};
 
-// says plants lose 1pt of water every 30 seconds
+/// @dev Plants lose 1pt of water every 30 seconds
 const WATER_LOSS_RATE: u64 = 1; // 1pt per time_unit
 const WATER_TIME_UNIT: u64 = 30; // 60 seconds
-// says plants grow 1 level every 120 seconds 
+// @dev Time for plant to grow in seconds, and time for plant to be ready for harvest
 const TIME_FOR_PLANT_TO_GROW: u64 = 120;
 
 
@@ -38,8 +38,6 @@ trait PlantTrait {
     fn update_water_level(ref self: Plant);
     /// Grows the plant if it's time
     fn update_growth(ref self: Plant);
-    /// Set the plant to harvestable
-    fn set_harvestable(ref self: Plant);
     /// Harvests the plant
     fn harvest(ref self: Plant);
 }
@@ -104,14 +102,15 @@ impl PlantImpl of PlantTrait {
         if current_growth_stage == self.get_max_growth_level().into() {
             /// Check plant if harvestable 
             let time_since_last_harvest = get_block_timestamp() - self.last_harvest_date;
-            if time_since_last_harvest > TIME_FOR_PLANT_TO_GROW {
-                self.set_harvestable();
+            if time_since_last_harvest >= TIME_FOR_PLANT_TO_GROW {
+                self.is_harvestable == true;
             }
         } else {
             let time_since_planted = get_block_timestamp() - self.planted_date;
             let calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
             /// If there is a change in growth stage, update the growth stage
-            if calculated_growth_stage != current_growth_stage { //
+            if calculated_growth_stage != current_growth_stage {
+                /// If new growth stage is less than max growth stage, update growth stage
                 if calculated_growth_stage < self.get_max_growth_level().into() {
                     self.growth_stage = calculated_growth_stage.try_into().unwrap();
                 } else {
@@ -123,14 +122,12 @@ impl PlantImpl of PlantTrait {
         }
     }
 
-    fn set_harvestable(ref self: Plant) {
-        self.is_harvestable = true;
-    }
 
     fn harvest(ref self: Plant) {
         /// Mint user a seed token (1155)
         /// ...
-        /// Update last harvested time
+        /// Update last harvested time 
+        self.is_harvestable = false;
         self.last_harvest_date = get_block_timestamp();
     }
 }
