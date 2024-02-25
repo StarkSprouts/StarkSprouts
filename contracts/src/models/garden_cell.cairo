@@ -1,5 +1,6 @@
 use starknet::{ContractAddress, get_block_timestamp};
 use stark_sprouts::models::plant::{Plant, PlantType, PlantTrait, PlantImpl, Felt252IntoPlantType};
+use debug::PrintTrait;
 
 #[derive(Model, Copy, Drop, Serde)]
 struct GardenCell {

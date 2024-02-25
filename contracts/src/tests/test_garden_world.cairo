@@ -44,13 +44,12 @@ mod tests {
 
         // call initialize_garden
         let mut gs = get!(world, (player, 2), (GardenCell,));
-        let b: bool = gs.plant.plant_type == PlantType::None;
-        b.print();
 
         actions_system.initialize_garden();
+        actions_system.plant_seed(1, 2);
 
         let mut gs = get!(world, (player, 2), (GardenCell,));
-        let b: bool = gs.plant.plant_type == PlantType::None;
+        let b: bool = gs.plant.plant_type == PlantType::Bell;
         b.print();
     // gs.print();
     // // call spawn()
