@@ -1,17 +1,15 @@
-import { Button } from "./components/ui/button";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import TestPage from "./pages/TestPage";
 
 function App() {
-  const handleInitWorld = () => {
-    console.log("Init World");
-  };
   return (
-    <div className="relative w-screen h-screen flex flex-col">
-      <main className="flex flex-col left-0 relative top-0 overflow-hidden grow">
-        <div>
-          <Button label="Init World" onPress={handleInitWorld} />
-        </div>
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/test" element={<TestPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
