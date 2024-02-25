@@ -4,6 +4,7 @@ import { ClientComponents } from "./createClientComponents";
 import { getEvents, setComponentsFromEvents } from "@dojoengine/utils";
 import { ContractComponents } from "./generated/contractComponents";
 import type { IWorld } from "./generated/generated";
+import type { BigNumberish } from "starknet";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -112,13 +113,15 @@ export function createSystemCalls(
 
   const plantSeed = async (
     account: Account,
-    cellIndex: number,
-    seed: number
+    seedLow: number,
+    seedHigh: number,
+    cellIndex: number
   ) => {
     try {
       const { transaction_hash } = await client.actions.plantSeed({
         account,
-        seed,
+        seedLow,
+        seedHigh,
         cellIndex,
       });
 

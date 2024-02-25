@@ -19,7 +19,7 @@ export default function TestPage() {
     account: { account },
   } = useDojo();
 
-  const handleInitWorld = () => {
+  const handleInitGarden = () => {
     console.log("Init World");
     initializeGarden(account);
   };
@@ -29,26 +29,27 @@ export default function TestPage() {
   const handleRemoveDeadPlant = () => {
     console.log("Remove Dead Plant");
   };
-  const handleWaterPlants = () => {
-    console.log("Water Plants");
+  const handleWaterPlant = () => {
+    console.log("Water Plant");
   };
-  const handlePlantSeeds = () => {
-    console.log("Plant Seeds");
+  const handlePlantSeed = () => {
+    console.log("Plant Seed");
+    plantSeed(account, 1, 2, 3);
   };
-  const handleHarvestPlants = () => {
-    console.log("Harvest Plants");
+  const handleHarvestPlant = () => {
+    console.log("Harvest Plant");
   };
 
   return (
     <div className="relative w-screen h-screen flex flex-col">
       <main className="flex flex-col left-0 relative top-0 overflow-hidden grow">
         <div>
-          <Button label="Init World" onPress={handleInitWorld} />
+          <Button label="Init World" onPress={handleInitGarden} />
           <Button label="Remove Rock" onPress={handleRemoveRock} />
           <Button label="Remove Dead Plant" onPress={handleRemoveDeadPlant} />
-          <Button label="Water Plants" onPress={handleWaterPlants} />
-          <Button label="Plant Seeds" onPress={handlePlantSeeds} />
-          <Button label="Harvest Plants" onPress={handleHarvestPlants} />
+          <Button label="Water Plant" onPress={handleWaterPlant} />
+          <Button label="Plant Seed" onPress={handlePlantSeed} />
+          <Button label="Harvest Plant" onPress={handleHarvestPlant} />
         </div>
       </main>
     </div>
