@@ -10,7 +10,6 @@ type GameProps = {
   canvasHeight: number;
 };
 
-/*
 const CameraAdjuster = ({ position }: { position: Vector3 }) => {
   const { camera } = useThree();
 
@@ -21,14 +20,13 @@ const CameraAdjuster = ({ position }: { position: Vector3 }) => {
 
   return null;
 };
-*/
 
 export const Game = ({ children, canvasWidth, canvasHeight }: GameProps) => {
   return (
     <Canvas
       camera={{
-        position: [0, 0, 20],
-        fov: 75,
+        position: [0, 0, 10],
+        fov: 100,
         near: 0.1,
         far: 1000,
       }}
