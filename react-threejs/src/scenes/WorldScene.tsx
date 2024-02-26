@@ -2,8 +2,7 @@ import { Tile } from "@/gameComponents/Tile";
 
 export const WorldScene = () => {
   // G is grass, P is a garden plot
-  const tileMap = `
-  GGGGGGGGGGGGGGGGGGGGGGGGGG
+  const tileMap = `GGGGGGGGGGGGGGGGGGGGGGGGGG
   GGGGGGGGGGGGGGGGGGGGGGGGGG
   GGGGGGGGGGGGGGGGGGGGGGGGGG
   GGGGGGGGGGGGGGGGGGGGGGGGGG
