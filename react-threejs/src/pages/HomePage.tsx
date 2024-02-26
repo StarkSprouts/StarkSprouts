@@ -2,9 +2,11 @@ import { TopBar } from "@/components/TopBar";
 
 export default function HomePage() {
   return (
-    <main className="w-screen h-screen">
-      <TopBar />
-      <div className="flex justify-center items-center flex-col ">
+    <div className="flex flex-row w-screen h-screen bg-slate-400">
+      <div>
+        <TopBar />
+      </div>
+      <div className="flex justify-center items-center flex-col">
         <h1 className="text-6xl">Welcome to Stark Sprouts</h1>
         <img
           src="../assets/logo.png"
@@ -13,6 +15,6 @@ export default function HomePage() {
           height={200}
         />
       </div>
-    </main>
+    </div>
   );
 }
