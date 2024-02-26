@@ -1,1 +1,2 @@
-cp ./contracts/target/dev/manifest.json react-threejs
+ls
+cp contracts/target/dev/manifest.json react-threejs
