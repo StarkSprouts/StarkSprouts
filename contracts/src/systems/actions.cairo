@@ -24,7 +24,6 @@ trait IActions<TContractState> {
     fn harvest_plant(self: @TContractState, cell_index: u16);
 }
 
-// dojo decorator
 #[dojo::contract]
 mod actions {
     use super::IActions;
@@ -32,11 +31,21 @@ mod actions {
     use starknet::{
         ContractAddress, get_caller_address, get_block_timestamp, info::get_block_number
     };
+    use openzeppelin::{
+        access::ownable::OwnableComponent,
+        upgrades::{UpgradeableComponent, interface::IUpgradeable},
+        token::erc20::{ERC20Component, interface::IERC20Metadata}
+    };
 
-    use stark_sprouts::models::{
-        garden_cell::{GardenCell, GardenCellImpl, PlotStatus},
-        plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},
-        player_stats::{PlayerStats, PlayerStatsImpl},
+    use stark_sprouts::{
+        models::{
+            garden_cell::{GardenCell, GardenCellImpl, PlotStatus},
+            plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},
+            player_stats::{PlayerStats, PlayerStatsImpl},
+            token_lookups::{TokenLookups, TokenLookupsImpl, TokenLookupsTrait},
+            seed_interface::{ISeedDispatcher, ISeedDispatcherTrait}
+        },
+    // token::seed::{ISeed, ISeedDispatcher, ISeedDispatcherTrait}
     };
     use core::poseidon::{poseidon_hash_span, PoseidonTrait};
 
@@ -85,6 +94,29 @@ mod actions {
                 set!(world, (garden_cell,));
             }
         }
+
+        fn get_seed_dispatcher(self: @ContractState, seed_id: u256) -> ISeedDispatcher {
+            let world = self.world_dispatcher.read();
+
+            let seed_id: felt252 = seed_id.try_into().unwrap();
+
+            let mut token_lookup: TokenLookups = get!(world, (seed_id), (TokenLookups,));
+
+            let seed_contract_address = token_lookup.erc20_address;
+            ISeedDispatcher { contract_address: seed_contract_address }
+        }
+
+        fn mint_seed(self: @ContractState, seed_id: u256) {
+            let seed_dispatcher = self.get_seed_dispatcher(seed_id);
+            let player = get_caller_address();
+            seed_dispatcher.mint_seeds(player, 1);
+        }
+
+        fn burn_seed(self: @ContractState, seed_id: u256) {
+            let seed_dispatcher = self.get_seed_dispatcher(seed_id);
+            let player = get_caller_address();
+            seed_dispatcher.burn_seeds(player, 1);
+        }
     }
 
     #[abi(embed_v0)]
@@ -128,6 +160,19 @@ mod actions {
                 set!(world, (garden_cell,));
                 i += 1;
             };
+            /// Mint the player some seeds
+            let mut i = 0;
+            loop {
+                if i == 3 {
+                    break;
+                }
+                /// Get new random int
+                random_seed = poseidon_hash_span((array![random_seed]).span());
+                random_int = random_seed.into();
+                /// Convert the random seed to a number of seeds to mint, [1-13] inclusive
+                let token_id = (random_int % 14);
+                self.mint_seed(token_id);
+            }
         // todo: mint random seeds 
         }
 
@@ -239,6 +284,7 @@ mod actions {
 
             assert(garden_cell.plot_status() == PlotStatus::Empty, 'Cell is not empty');
 
+            self.burn_seed(seed_id);
             garden_cell.plant_seed(seed_id, cell_index);
 
             set!(world, (garden_cell,));
@@ -258,6 +304,11 @@ mod actions {
             assert(garden_cell.plant.is_harvestable, 'Plant not ready for harvest');
 
             garden_cell.plant.harvest();
+
+            let seed_id: felt252 = garden_cell.plant.plant_type.into();
+            let seed_id: u256 = seed_id.into();
+
+            self.mint_seed(seed_id);
 
             set!(world, (garden_cell,));
         }
