@@ -1,11 +1,15 @@
+import { Nav } from "@/components/ui/nav";
+
 export default function HomePage() {
   return (
-    <div className="relative w-screen h-screen flex flex-col">
-      <main className="flex flex-col left-0 relative top-0 overflow-hidden grow">
-        <div>
-          <h1>Home Page</h1>
-        </div>
-      </main>
-    </div>
+    <main className="relative w-screen h-screen">
+      <Nav />
+      <img
+        src="../../assets/logo.png"
+        alt="Stark Sprouts"
+        width={100}
+        height={100}
+      />
+    </main>
   );
 }
