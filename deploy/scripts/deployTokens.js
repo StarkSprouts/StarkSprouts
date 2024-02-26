@@ -1,6 +1,7 @@
 const { Account, json, RpcProvider } = require("starknet");
 const { config } = require("dotenv");
 const { readFileSync } = require("fs");
+const { exec } = require("child_process");
 const env = config({ path: "deploy/.env" }).parsed;
 
 /**
@@ -35,6 +36,64 @@ const deployContract = async (constructorCalldata) => {
   return deployResponse.deploy.contract_address;
 };
 
+/// Build sozo packages and migrate to katana
+/// todo: need to add sozo auth
+const buildAndMigrateToSozo = async () => {
+  const command = "cd contracts && sozo build && sozo migrate";
+  console.log("\nBuilding and migrating to sozo...\n");
+
+  // Use a promise to handle the asynchronous execution
+  return new Promise((resolve, reject) => {
+    /// move addresses up here with let ...
+    /// dont return until end, need to do auth before
+    exec(command, (error, stdout) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(error); // Reject the promise on error
+        return;
+      }
+
+      // Simplify regex search by using a single function
+      const extractAddress = (regex) => {
+        const match = stdout.match(regex);
+        return match ? match[1] : null;
+      };
+
+      // Extract world and actions addresses
+      const worldAddress = extractAddress(
+        /Successfully migrated World at address (\w+)/
+      );
+      const actionsAddress =
+        extractAddress(
+          /stark_sprouts::systems::actions::actions\s*>\s*Contract address:\s*(\w+)/
+          // /stark_sprouts::systems::actions::actions\s*>\s*Contract address:\s*(0x[a-fA-F0-9]{63})/
+        ) ||
+        extractAddress(
+          /stark_sprouts::systems::actions::actions\s*>\s*Already deployed:\s*(\w+)/
+        );
+
+      // Log results
+      console.log(
+        worldAddress
+          ? `World address: ${worldAddress}\n`
+          : "World address not found."
+      );
+      console.log(
+        actionsAddress
+          ? `Actions address: ${actionsAddress}\n`
+          : "Actions address not found."
+      );
+
+      resolve(worldAddress); // Resolve the promise with worldAddress
+    });
+  });
+};
+
+/// Set token lookups
+const setTokenLookups = async (worldAddress, tokenAddresses) => {
+  /// run sozo execute
+};
+
 // going to need a function to deploy world, then deploy all seeds, then call set_token_lookups
 
 // Deploy all seed contracts
@@ -56,9 +115,11 @@ const main = async () => {
       [account.address, "SeedToken", "Zigzag", "dojo_address"],
     ];
 
-    for (const args of constructorArgsList) {
-      await deployContract(args);
-    }
+    await buildAndMigrateToSozo();
+
+    // for (const args of constructorArgsList) {
+    //   await deployContract(args);
+    // }
   } catch (error) {
     console.error(`Operation failed! Reason: ${error.message}`);
   }
