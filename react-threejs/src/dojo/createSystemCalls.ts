@@ -1,10 +1,19 @@
 import { Account } from "starknet";
 // @ts-ignore
 import { ClientComponents } from "./createClientComponents";
-import { getEvents, setComponentsFromEvents } from "@dojoengine/utils";
+import {
+  getEvents,
+  setComponentsFromEvents,
+  getEntityIdFromKeys,
+} from "@dojoengine/utils";
 import { ContractComponents } from "./generated/contractComponents";
 import type { IWorld } from "./generated/generated";
 import type { BigNumberish } from "starknet";
+import { uuid } from "@latticexyz/utils";
+import { PlantType } from "@/types";
+import { useGardenStore } from "@/stores/gardenStore";
+import { getComponentValue } from "@dojoengine/recs";
+import { GardenCellType } from "@/types";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -14,6 +23,16 @@ export function createSystemCalls(
   { GardenCell }: ClientComponents
 ) {
   const initializeGarden = async (account: Account) => {
+    const entityId = getEntityIdFromKeys([BigInt(account.address)]);
+
+    // TODO: figure out what this does.what is overriding?
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      // @ts-ignore
+      value: getComponentValue(GardenCell, entityId),
+    });
+
     try {
       const { transaction_hash } = await client.actions.initializeGarden({
         account,
@@ -27,17 +46,27 @@ export function createSystemCalls(
           })
         )
       );
-      console.log(
-        `Garden initialized: ${transaction_hash} -- ${JSON.stringify(
-          contractComponents
-        )}`
-      );
     } catch (e) {
       console.error(e);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
   const refreshGarden = async (account: Account) => {
+    const entityId = getEntityIdFromKeys([BigInt(account.address)]);
+
+    const componentValue = getComponentValue(GardenCell, entityId);
+    console.log("Component value: ", JSON.stringify(componentValue));
+
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: componentValue,
+    });
+
     try {
       const { transaction_hash } = await client.actions.refreshGarden({
         account,
@@ -53,10 +82,30 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
   const removeRock = async (account: Account, cellIndex: number) => {
+    // NOTE: we are creating a hash from the account address and the cell index
+    const entityId = getEntityIdFromKeys([
+      BigInt(account.address),
+      BigInt(cellIndex),
+    ]);
+
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: {
+        player_address: BigInt(account.address),
+        has_rock: false, // this is telling dojo to update the value of has_rock to false
+      },
+    });
+
     try {
       const { transaction_hash } = await client.actions.removeRock({
         account,
@@ -73,10 +122,35 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
   const removeDeadPlant = async (account: Account, cellIndex: number) => {
+    const entityId = getEntityIdFromKeys([
+      BigInt(account.address),
+      BigInt(cellIndex),
+    ]);
+
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: {
+        player_address: BigInt(account.address),
+        plant: {
+          plant_type: 0, // NOTE: what is dead plant state?
+          water_level: 0,
+          growth_stage: 0,
+          planted_at: 0,
+          last_watered: 0,
+        },
+      },
+    });
+
     try {
       const { transaction_hash } = await client.actions.removeDeadPlant({
         account,
@@ -93,10 +167,34 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
   const waterPlant = async (account: Account, cellIndex: number) => {
+    const entityId = getEntityIdFromKeys([
+      BigInt(account.address),
+      BigInt(cellIndex),
+    ]);
+
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: {
+        player_address: BigInt(account.address),
+        plant: {
+          plant_type: 0,
+          water_level: 100,
+          growth_stage: 0,
+          planted_at: 0,
+          last_watered: 0, // TODO: set to "now" here?
+        },
+      },
+    });
     try {
       const { transaction_hash } = await client.actions.waterPlant({
         account,
@@ -113,6 +211,11 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
@@ -122,6 +225,29 @@ export function createSystemCalls(
     seedHigh: number,
     cellIndex: number
   ) => {
+    const entityId = getEntityIdFromKeys([
+      BigInt(account.address),
+      BigInt(cellIndex),
+      BigInt(seedLow),
+      BigInt(seedHigh),
+    ]);
+
+    // TODO: need to add is is_harvested
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: {
+        player_address: BigInt(account.address),
+        plant: {
+          plant_type: seedLow,
+          water_level: 100,
+          growth_stage: 0,
+          planted_at: 0,
+          last_watered: 0,
+        },
+      },
+    });
+
     try {
       const { transaction_hash } = await client.actions.plantSeed({
         account,
@@ -140,10 +266,35 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 
   const harvestPlant = async (account: Account, cellIndex: number) => {
+    const entityId = getEntityIdFromKeys([
+      BigInt(account.address),
+      BigInt(cellIndex),
+    ]);
+
+    const gardenId = uuid();
+    GardenCell.addOverride(gardenId, {
+      entity: entityId,
+      value: {
+        player_address: BigInt(account.address),
+        plant: {
+          plant_type: 0,
+          water_level: 0,
+          growth_stage: 0,
+          planted_at: 0,
+          last_watered: 0,
+        },
+      },
+    });
+
     try {
       const { transaction_hash } = await client.actions.harvestPlant({
         account,
@@ -160,6 +311,11 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
+      GardenCell.removeOverride(gardenId);
+    } finally {
+      setTimeout(() => {
+        GardenCell.removeOverride(gardenId);
+      }, 1000);
     }
   };
 

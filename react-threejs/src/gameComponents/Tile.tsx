@@ -25,6 +25,7 @@ export type AssetsType = {
   topEdge: any;
   bottomEdge: any;
   plant: any;
+  rock: any;
 };
 
 export enum TileType {

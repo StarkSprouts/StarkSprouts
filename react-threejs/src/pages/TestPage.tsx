@@ -30,11 +30,11 @@ export default function TestPage() {
   }
 
   const handleInitGarden = () => {
-    console.log("Init World");
+    console.log("init world");
     initializeGarden(account);
   };
   const handleRefreshGarden = () => {
-    console.log("Refresh World");
+    console.log("refresh world");
     refreshGarden(account);
   };
   const handleRemoveRock = () => {
