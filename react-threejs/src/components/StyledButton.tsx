@@ -4,7 +4,7 @@ type ButtonProps = {
   children?: React.ReactNode;
 };
 
-export const Button = (props: ButtonProps) => {
+export const StyledButton = (props: ButtonProps) => {
   return (
     <button
       onClick={props.onPress}

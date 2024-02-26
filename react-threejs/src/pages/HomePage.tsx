@@ -1,10 +1,10 @@
-import { Nav } from "@/components/ui/nav";
+import { TopBar } from "@/components/TopBar";
 
 export default function HomePage() {
   return (
-    <main className="relative w-screen h-screen">
-      <Nav />
-      <div className="flex justify-center items-center flex-col mt-20">
+    <main className="w-screen h-screen">
+      <TopBar />
+      <div className="flex justify-center items-center flex-col ">
         <h1 className="text-6xl">Welcome to Stark Sprouts</h1>
         <img
           src="../assets/logo.png"
