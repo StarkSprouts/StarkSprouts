@@ -3,34 +3,34 @@
 trait IActions<TContractState> {
     /// Initialize a garden for the player
     fn initialize_garden(self: @TContractState);
-
-    /// Refresh the state of the garden for specific cells
-    fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
-
-    /// Refresh a player's garden state
-    fn refresh_garden(self: @TContractState);
-
-    /// Top off the water level for a plant
-    fn water_plant(self: @TContractState, cell_index: u16);
-
     /// Remove a rock from the garden
     fn remove_rock(self: @TContractState, cell_index: u16);
-
-    /// Remove a dead plant from the garden 
-    fn remove_dead_plant(self: @TContractState, cell_index: u16);
-
     /// Plants the seed type at the given garden index
-    /// @dev todo: implement token burning
     fn plant_seed(self: @TContractState, seed_id: u256, cell_index: u16);
-
+    /// Top off the water level for a plant
+    fn water_plant(self: @TContractState, cell_index: u16);
     /// Harvest the plant at the given garden index
     fn harvest_plant(self: @TContractState, cell_index: u16);
+    /// Remove a dead plant from the garden 
+    fn remove_dead_plant(self: @TContractState, cell_index: u16);
+    /// Refresh the state of the garden for specific cells
+    fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
+    /// Refresh a player's garden state
+    fn refresh_garden(self: @TContractState);
 }
 
 #[dojo::contract]
 mod actions {
     use super::IActions;
-
+    use stark_sprouts::{
+        models::{
+            garden_cell::{GardenCell, GardenCellImpl, PlotStatus},
+            plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},
+            player_stats::{PlayerStats, PlayerStatsImpl},
+            seed_interface::{ISeedDispatcher, ISeedDispatcherTrait},
+            token_lookups::{TokenLookups, TokenLookupsImpl, TokenLookupsTrait},
+        },
+    };
     use starknet::{
         ContractAddress, get_caller_address, get_block_timestamp, info::get_block_number
     };
@@ -39,32 +39,17 @@ mod actions {
         upgrades::{UpgradeableComponent, interface::IUpgradeable},
         token::erc20::{ERC20Component, interface::IERC20Metadata}
     };
-
-    use stark_sprouts::{
-        models::{
-            garden_cell::{GardenCell, GardenCellImpl, PlotStatus},
-            plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},
-            player_stats::{PlayerStats, PlayerStatsImpl},
-            token_lookups::{TokenLookups, TokenLookupsImpl, TokenLookupsTrait},
-            seed_interface::{ISeedDispatcher, ISeedDispatcherTrait}
-        },
-    // token::seed::{ISeed, ISeedDispatcher, ISeedDispatcherTrait}
-    };
     use core::poseidon::{poseidon_hash_span, PoseidonTrait};
-
     use debug::PrintTrait;
-
 
     const DIM: u16 = 15;
     const STARTING_SEED_COUNT: u8 = 3;
-    const NUMBER_OF_PLANT_ASSETS: u8 = 13;
-
-
     const MAX_ROCKS_AT_SPAWN: u8 = 50;
+    const NUMBER_OF_PLANT_ASSETS: u8 = 13;
     const TIME_TO_REMOVE_ROCK: u64 = 15; // 15 seconds
     const TIME_FOR_PLANT_TO_HARVEST: u64 = 120;
 
-
+    /// Internal ///
     #[generate_trait]
     impl Private of PrivateTrait {
         /// Assert the cell index is within bounds
@@ -103,14 +88,12 @@ mod actions {
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
             /// If there is an alive plant in the cell, update its water level and growth, need a way to set 
             if (garden_cell.plot_status() == PlotStatus::AlivePlant) {
-                /// @dev Plant dies if it's water level reaches 0
-                garden_cell.plant.update_water_level();
+                /// Update the plants growth stage and water level
+                garden_cell.plant.update_growth();
                 /// Check if plant died
+                /// @dev Plant dies if it's water level reaches 0
                 if garden_cell.plot_status() == PlotStatus::DeadPlant { //
                 // emit!(world, PlantDied { player, garden_cell });
-                } else {
-                    /// Update the plant's growth if it's alive
-                    garden_cell.plant.update_growth();
                 }
 
                 set!(world, (garden_cell,));
@@ -122,28 +105,18 @@ mod actions {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
-            /// If there is a pending rock,
+            /// If there is a pending rock try to remove it
             if player_stats.rock_pending {
-                /// Check if the rock removal is finished
-                let time_since_rock_removal_started = get_block_timestamp()
-                    - player_stats.rock_removal_started_date;
+                let cell_index = player_stats.rock_pending_cell_index;
+                let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
 
-                if time_since_rock_removal_started >= TIME_TO_REMOVE_ROCK {
-                    let cell_index = player_stats.rock_pending_cell_index;
-                    let mut garden_cell: GardenCell = get!(
-                        world, (player, cell_index), (GardenCell,)
-                    );
+                player_stats.finish_rock_removal();
+                garden_cell.set_has_rock(false);
 
-                    player_stats.finish_rock_removal();
-                    garden_cell.set_has_rock(false);
-
-                    set!(world, (garden_cell,));
-                    set!(world, (player_stats,));
-                }
+                set!(world, (garden_cell,));
+                set!(world, (player_stats,));
             }
         }
-
-        /// Seed Stuff /// 
 
         /// Get the seed dispatcher for the given seed id
         fn get_seed_dispatcher(self: @ContractState, seed_id: u256) -> ISeedDispatcher {
@@ -253,10 +226,7 @@ mod actions {
             self.finish_rock_removal_if_ready(cell_index);
         }
 
-        /// Refresh a player's garden state
-        /// @dev There is a way reduce cairo steps by only calling 
-        /// refresh plot(s) from the front end and targeting cells
-        /// of importance (i.e PlotStatus==AlivePlant) && still calling for the pending rock removal
+        /// Refresh a player's entire garden's state
         fn refresh_garden(self: @ContractState) {
             self.assert_player_has_garden();
             let world = self.world_dispatcher.read();
@@ -311,11 +281,8 @@ mod actions {
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
 
             assert(garden_cell.plot_status() == PlotStatus::Rock, 'No rock to remove');
-            assert(!player_stats.rock_pending, 'Still removing a rock');
-
             player_stats.start_rock_removal(cell_index);
 
-            // set!(world, (garden_cell,));
             set!(world, (player_stats,));
         // emit!(world, RockRemoved { player, garden_cell });
         }
@@ -361,17 +328,11 @@ mod actions {
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
-
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-
-            assert(garden_cell.plant.is_harvestable, 'Plant not ready for harvest');
+            let seed_id: felt252 = garden_cell.plant.plant_type.into();
 
             garden_cell.plant.harvest();
-
-            let seed_id: felt252 = garden_cell.plant.plant_type.into();
-            let seed_id: u256 = seed_id.into();
-
-            self.mint_seed(seed_id);
+            self.mint_seed(seed_id.into());
 
             set!(world, (garden_cell,));
         }
