@@ -1,4 +1,5 @@
 use starknet::{ContractAddress, get_block_timestamp};
+use debug::PrintTrait;
 
 /// @dev Plants lose 1pt of water every 30 seconds
 const WATER_LOSS_RATE: u64 = 1; // 1pt per time_unit
@@ -15,8 +16,8 @@ struct Plant {
     is_dead: bool,
     /// Is the plant ready for harvest
     is_harvestable: bool,
-    /// Stage of the plant's growth
-    growth_stage: u8, // (0 - max_for_plant_type)
+    /// Stage of the plant's growth, [0, max_for_plant_type]
+    growth_stage: u8,
     /// Water level of the plant
     water_level: u8, // (1 - 100)
     /// The time the plant was planted
@@ -28,21 +29,22 @@ struct Plant {
 }
 
 trait PlantTrait {
-    /// Wipes the plant's data
+    /// Sets the plant to default values
     fn reset(ref self: Plant);
-    /// Returns the max growth level for the plant
-    fn get_max_growth_level(ref self: Plant) -> u8;
     /// Top off the plants water level
     fn water_plant(ref self: Plant);
-    /// Updates the water level of the plant
-    fn update_water_level(ref self: Plant);
+    /// Plant loses water over time
+    fn lose_water(ref self: Plant);
     /// Grows the plant if it's time
     fn update_growth(ref self: Plant);
-    /// Harvests the plant
+    /// Returns the max growth level for the plant type
+    fn get_max_growth_level(ref self: Plant) -> u8;
+    /// Harvest the plant if it's ready
     fn harvest(ref self: Plant);
 }
 
 impl PlantImpl of PlantTrait {
+    /// Sets the plant to default values
     fn reset(ref self: Plant) {
         self =
             Plant {
@@ -57,12 +59,7 @@ impl PlantImpl of PlantTrait {
             };
     }
 
-    fn water_plant(ref self: Plant) {
-        self.water_level = 100;
-        self.last_water_date = get_block_timestamp();
-        self.update_growth();
-    }
-
+    /// Returns the max growth level for the plant type
     fn get_max_growth_level(ref self: Plant) -> u8 {
         match self.plant_type {
             PlantType::None => 0,
@@ -82,57 +79,76 @@ impl PlantImpl of PlantTrait {
         }
     }
 
-    fn update_water_level(ref self: Plant) {
+    /// Top off the plants water level
+    fn water_plant(ref self: Plant) {
+        self.water_level = 100;
+        self.last_water_date = get_block_timestamp();
+        self.update_growth();
+    }
+
+    /// Plant loses water over time
+    fn lose_water(ref self: Plant) {
         let time_since_last_water = get_block_timestamp() - self.last_water_date;
         let water_loss: u64 = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
-        let current_water_level: u64 = self.water_level.into();
 
-        if water_loss < current_water_level {
+        if water_loss < self.water_level.into() {
             self.water_level -= water_loss.try_into().unwrap();
+            self.last_water_date = get_block_timestamp();
         } else {
             self.water_level = 0;
             self.is_dead = true;
         }
     }
 
+    /// Updates the state of the plant
     fn update_growth(ref self: Plant) {
-        let current_growth_stage = self.growth_stage.into();
-
+        self.lose_water();
         /// If adult plant
-        if current_growth_stage == self.get_max_growth_level().into() {
-            /// Check plant if harvestable 
+        let current_growth_stage = self.growth_stage;
+
+        if current_growth_stage == self.get_max_growth_level() {
+            /// If plant is ready for harvest
             let time_since_last_harvest = get_block_timestamp() - self.last_harvest_date;
             if time_since_last_harvest >= TIME_FOR_PLANT_TO_GROW {
-                self.is_harvestable == true;
+                self.is_harvestable = true;
             }
-        } else {
+        } /// If juvenile plant
+        else {
             let time_since_planted = get_block_timestamp() - self.planted_date;
-            let calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
-            /// If there is a change in growth stage, update the growth stage
-            if calculated_growth_stage != current_growth_stage {
+            let mut calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
+            let max_growth_stage = self.get_max_growth_level();
+
+            if calculated_growth_stage > max_growth_stage.into() {
+                calculated_growth_stage = max_growth_stage.into();
+            }
+
+            /// Is there a change in growth stage ? 
+            if calculated_growth_stage != current_growth_stage.into() {
                 /// If new growth stage is less than max growth stage, update growth stage
-                if calculated_growth_stage < self.get_max_growth_level().into() {
+                if calculated_growth_stage < max_growth_stage.into() {
                     self.growth_stage = calculated_growth_stage.try_into().unwrap();
-                } else {
-                    self.growth_stage = self.get_max_growth_level();
-                    /// @dev Used for logic in ::harvest()
-                    self.last_harvest_date = get_block_timestamp();
+                } /// If new growth stage is max growth stage, update growth stage and set plant to harvestable
+                else {
+                    self.growth_stage = max_growth_stage;
+                    /// @dev Needed for logic. Without this, the plant becomes immediately harvesable after 
+                    /// reaching the max growth stage, when they must wait TIME_FOR_PLANT_TO_GROW
+                    self
+                        .last_harvest_date =
+                            get_block_timestamp(); // this might be causing issues , if plant watered when no harvest, timer is set back to 0
                 }
             }
         }
     }
 
-
+    /// Harvest the plant if it's ready
     fn harvest(ref self: Plant) {
-        /// Mint user a seed token (1155)
-        /// ...
-        /// Update last harvested time 
+        assert(self.is_harvestable, 'Plant not ready for harvest');
         self.is_harvestable = false;
         self.last_harvest_date = get_block_timestamp();
     }
 }
 
-#[derive(Serde, Copy, Drop, Introspect, PartialEq, Print)]
+#[derive(Serde, Copy, Drop, Introspect, PartialEq)] // Print
 enum PlantType {
     None,
     Bell,
@@ -193,16 +209,16 @@ impl Felt252IntoPlantType of Into<felt252, PlantType> {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
+    use starknet::testing::{set_block_timestamp};
+    use starknet::get_block_timestamp;
     use debug::PrintTrait;
     use super::{Plant, PlantImpl, PlantTrait, PlantType};
 
-
     fn setup_plant() -> Plant {
         Plant {
-            growth_stage: 1,
+            growth_stage: 0,
             water_level: 100,
             planted_date: 111,
             last_water_date: 222,
@@ -224,6 +240,104 @@ mod tests {
         assert(plant.last_water_date == 0, 'Last watered should be 0');
         assert(plant.plant_type == PlantType::None, 'Plant type should be None');
         assert(!plant.is_dead, 'Plant should be alive');
+        assert(plant.last_harvest_date == 0, 'Last harvested should be 0');
+        assert(!plant.is_harvestable, 'Plant should not be harvestable');
+    }
+
+    #[test]
+    #[available_gas(1000000)]
+    fn test_water_plant() {
+        let mut plant = timed_plant();
+        plant.water_level = 50;
+        assert(plant.water_level == 50, 'Water level should be 50');
+        plant.water_plant();
+        assert(plant.water_level == 100, 'Water level should be 100');
+    }
+
+    fn timed_plant() -> Plant {
+        set_block_timestamp(0xfff);
+        Plant {
+            growth_stage: 0,
+            water_level: 100,
+            planted_date: get_block_timestamp(),
+            last_water_date: get_block_timestamp(),
+            plant_type: PlantType::Zigzag,
+            is_dead: false,
+            last_harvest_date: 0,
+            is_harvestable: false,
+        }
+    }
+
+    #[test]
+    #[available_gas(1000000)]
+    fn test_lose_water() {
+        set_block_timestamp(0xfff);
+
+        let mut plant = timed_plant();
+        assert(plant.water_level == 100, 'Water level should be 100');
+
+        set_block_timestamp(get_block_timestamp() + 30);
+        plant.lose_water();
+        assert(plant.water_level == 99, 'Water level should be 99');
+
+        set_block_timestamp(get_block_timestamp() + 90);
+        plant.lose_water();
+        assert(plant.water_level == 96, 'Water level should be 96');
+
+        set_block_timestamp(get_block_timestamp() + 29);
+        plant.lose_water();
+        assert(plant.water_level == 96, 'Water level should be 96');
+
+        set_block_timestamp(get_block_timestamp() + 30 * 100);
+        plant.lose_water();
+        assert(plant.water_level == 0, 'Water level should be 0');
+        assert(plant.is_dead, 'Plant should be dead');
+    }
+
+    #[test]
+    #[available_gas(10000000)]
+    fn test_update_growth_level_to_harvest_and_beyond() {
+        let mut plant = timed_plant();
+
+        assert(plant.growth_stage == 0, 'Growth stage should be 0');
+
+        plant.update_growth();
+
+        set_block_timestamp(get_block_timestamp() + 120);
+        plant.update_growth();
+        assert(plant.growth_stage == 1, 'Growth stage should be 1');
+
+        set_block_timestamp(get_block_timestamp() + 240);
+        plant.update_growth();
+        assert(plant.growth_stage == 3, 'Growth stage should be 3');
+
+        set_block_timestamp(get_block_timestamp() + 119);
+        plant.update_growth();
+        assert(plant.growth_stage == 3, 'Growth stage should be 3');
+
+        loop {
+            set_block_timestamp(get_block_timestamp() + 120);
+            plant.water_plant();
+            if plant.growth_stage == 14 {
+                break;
+            }
+        };
+        assert(plant.growth_stage == 14, 'Growth stage should be 14');
+        assert(!plant.is_harvestable, 'Should not be harvestable');
+
+        set_block_timestamp(get_block_timestamp() + 119);
+        plant.water_plant();
+        assert(!plant.is_harvestable, 'Should not be harvestable');
+
+        set_block_timestamp(get_block_timestamp() + 2);
+        plant.water_plant();
+        assert(plant.is_harvestable, 'Should be harvestable');
+
+        set_block_timestamp(get_block_timestamp() + 123);
+        plant.water_plant();
+        plant.harvest();
+        assert(!plant.is_harvestable, 'Should not be harvestable');
+        assert(plant.last_harvest_date == get_block_timestamp(), 'Last harvested time wrong');
     }
 
     #[test]
@@ -259,30 +373,4 @@ mod tests {
         plant.plant_type = PlantType::Zigzag;
         assert(plant.get_max_growth_level() == 14, 'Max growth level should be 14');
     }
-// #[test]
-// #[available_gas(1000000)]
-/// @dev test was passing until I added update_growth into ::water_plant(), needs non 0 block times
-// fn test_water_plant() {
-//     let mut plant = setup_plant();
-//     plant.water_level = 50;
-//     plant.last_water_date = 111;
-//     assert(plant.water_level == 50, 'Water level should be 50');
-//     assert(plant.last_water_date == 111, 'Last watered time wrong');
-//     plant.water_plant();
-//     assert(plant.water_level == 100, 'Water level should be 100');
-//     assert(
-//         plant.last_water_date == 0, 'Last watered time wrong'
-//     ); // 0 is the current blocktime without cheatcodes
-// }
-
-// #[test]
-// #[available_gas(1000000)]
-// @dev Can't do without cheatcodes, need non 0 block times
-// fn test_update_water_level() {}
-
-// #[test]
-// #[available_gas(1000000)]
-// @dev Can't do without cheatcodes, need non 0 block times
-// fn test_update_growth() {}
 }
-

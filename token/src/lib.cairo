@@ -1,0 +1,3 @@
+mod contracts {
+    mod Seed;
+}
