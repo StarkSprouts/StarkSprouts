@@ -23,6 +23,7 @@ const texturePaths = {
   rightEdge: "src/textures/tiles/sand/sand_08.png",
   topEdge: "src/textures/tiles/sand/sand_01.png",
   bottomEdge: "src/textures/tiles/sand/sand_13.png",
+  plant: "src/textures/plants/salvia/salvia_11.png",
 };
 
 export const AssetLoader = ({ children }: AssetLoaderProps) => {
@@ -40,6 +41,7 @@ export const AssetLoader = ({ children }: AssetLoaderProps) => {
     texturePaths.rightEdge,
     texturePaths.topEdge,
     texturePaths.bottomEdge,
+    texturePaths.plant,
   ]);
 
   const assets = {
@@ -56,6 +58,7 @@ export const AssetLoader = ({ children }: AssetLoaderProps) => {
     rightEdge: textures[10],
     topEdge: textures[11],
     bottomEdge: textures[12],
+    plant: textures[13],
   };
 
   return (

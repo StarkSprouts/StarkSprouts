@@ -1,8 +1,9 @@
 import React from "react";
-import { useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 import { useAssets } from "@/gameComponents/AssetLoader";
 import { PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
 import { getGardenPositionByCell } from "@/utils/gridHelper";
+import { Plant } from "@/gameComponents/Plant";
 
 type TileProps = {
   type: TileType;
@@ -23,6 +24,7 @@ export type AssetsType = {
   rightEdge: any;
   topEdge: any;
   bottomEdge: any;
+  plant: any;
 };
 
 export enum TileType {
@@ -39,7 +41,8 @@ export enum TileType {
 }
 
 export const Tile = ({ type, position }: TileProps) => {
-  const { scene } = useThree();
+  const [color, setColor] = React.useState("white");
+
   const {
     grass1,
     grass2,
@@ -54,6 +57,7 @@ export const Tile = ({ type, position }: TileProps) => {
     rightEdge,
     topEdge,
     bottomEdge,
+    plant,
   } = useAssets() as AssetsType;
 
   // Example: Add different objects based on the tile type
@@ -92,21 +96,17 @@ export const Tile = ({ type, position }: TileProps) => {
       texture = bottomEdge;
       break;
   }
-  if (!texture) return null;
-  if (getGardenPositionByCell(244).toString() === position.toString()) {
-    console.log("position", position);
-    texture = grass1;
-  }
-  // Create a plane geometry for the tile
-  const geometry = new PlaneGeometry(1, 1);
-  const material = new MeshBasicMaterial({ map: texture });
-  const mesh = new Mesh(geometry, material);
 
-  // Set the position of the tile
-  mesh.position.set(...position, 0);
-
-  // Use the scene from useThree() to add the mesh
-  scene.add(mesh);
-
-  return null;
+  const handleClick = () => {
+    console.log("Tile clicked");
+    setColor("red");
+  };
+  return (
+    <>
+      <mesh position={[...position, 0]} onClick={handleClick}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial attach="material" color={color} map={texture} />
+      </mesh>
+    </>
+  );
 };
