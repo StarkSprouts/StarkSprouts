@@ -73,7 +73,7 @@ mod tests {
     use super::{GardenCell, GradenCellTrait, GardenCellImpl, PlotStatus};
     use stark_sprouts::models::{plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},};
 
-    /// Gets an empty garden cell
+    /// Makes an empty garden cell
     fn setup_garden() -> GardenCell {
         GardenCell {
             player: starknet::contract_address_const::<'player'>(),
@@ -93,7 +93,7 @@ mod tests {
     }
 
     /// Tests plot status 
-    /// @dev Tests both other functions as well
+    /// @dev Tests plant_seed & set_has_rock indirectly
     fn test_plot_status() {
         let mut garden_cell = setup_garden();
         let status = garden_cell.plot_status();
@@ -108,7 +108,7 @@ mod tests {
         let status = garden_cell.plot_status();
         assert(status == PlotStatus::AlivePlant, 'status should be AlivePlant');
         garden_cell.plant.water_level = 0;
-        garden_cell.plant.update_water_level();
+        garden_cell.plant.lose_water();
         let status = garden_cell.plot_status();
         assert(status == PlotStatus::DeadPlant, 'status should be DeadPlant');
     }

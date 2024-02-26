@@ -1,6 +1,6 @@
 #[starknet::interface]
 trait IActions<TContractState> {
-    /// Set token lookups 
+    /// Set seed token address lookups
     fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
     /// Initialize a garden for the player
     fn initialize_garden(self: @TContractState);
@@ -47,8 +47,8 @@ mod actions {
     const STARTING_SEED_COUNT: u8 = 3;
     const MAX_ROCKS_AT_SPAWN: u8 = 50;
     const NUMBER_OF_PLANT_ASSETS: u8 = 13;
-    const TIME_TO_REMOVE_ROCK: u64 = 15; // 15 seconds
-    const TIME_FOR_PLANT_TO_HARVEST: u64 = 120;
+    const TIME_TO_REMOVE_ROCK: u64 = 15; // seconds
+    const TIME_FOR_PLANT_TO_HARVEST: u64 = 120; // seconds
 
     /// Internal ///
     #[generate_trait]
@@ -81,7 +81,8 @@ mod actions {
             player_stats.has_garden
         }
 
-        /// Refresh a plot by lowering the plant's water level and updating its growth
+        /// Refresh a plot by lowering the plant's water level, updating 
+        /// its growth stage (if necessary), and marking the plant harvested (if necessary)
         fn refresh_plot(self: @ContractState, cell_index: u16) {
             self.assert_cell_index_in_bounds(cell_index);
             let world = self.world_dispatcher.read();
@@ -93,10 +94,9 @@ mod actions {
                 garden_cell.plant.update_growth();
                 /// Check if plant died
                 /// @dev Plant dies if it's water level reaches 0
-                if garden_cell.plot_status() == PlotStatus::DeadPlant { //
+                // if garden_cell.plot_status() == PlotStatus::DeadPlant { 
                 // emit!(world, PlantDied { player, garden_cell });
-                }
-
+                // }
                 set!(world, (garden_cell,));
             }
         }
@@ -107,16 +107,14 @@ mod actions {
             let player = get_caller_address();
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
             /// If there is a pending rock try to remove it
-            if player_stats.rock_pending {
-                let cell_index = player_stats.rock_pending_cell_index;
-                let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+            let cell_index = player_stats.rock_pending_cell_index;
+            let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
 
-                player_stats.finish_rock_removal();
-                garden_cell.set_has_rock(false);
+            player_stats.finish_rock_removal();
+            garden_cell.set_has_rock(false);
 
-                set!(world, (garden_cell,));
-                set!(world, (player_stats,));
-            }
+            set!(world, (garden_cell,));
+            set!(world, (player_stats,));
         }
 
         /// Get the seed dispatcher for the given seed id
@@ -124,22 +122,18 @@ mod actions {
             assert(seed_id <= NUMBER_OF_PLANT_ASSETS.into(), 'Invalid seed id');
             let world = self.world_dispatcher.read();
             let mut token_lookup: TokenLookups = get!(world, (seed_id), (TokenLookups,));
-            let seed_contract_address = token_lookup.erc20_address;
 
-            ISeedDispatcher { contract_address: seed_contract_address }
+            ISeedDispatcher { contract_address: token_lookup.erc20_address }
         }
 
         /// Mint the player a seed token
         fn mint_seed(self: @ContractState, seed_id: u256) {
-            let player = get_caller_address();
-            self.get_seed_dispatcher(seed_id).mint_seeds(player, 1);
+            self.get_seed_dispatcher(seed_id).mint_seeds(get_caller_address(), 1);
         }
 
         /// Burn a player's seed token
         fn burn_seed(self: @ContractState, seed_id: u256) {
-            let seed_dispatcher = self.get_seed_dispatcher(seed_id);
-            let player = get_caller_address();
-            seed_dispatcher.burn_seeds(player, 1);
+            self.get_seed_dispatcher(seed_id).burn_seeds(get_caller_address(), 1);
         }
     }
 
@@ -185,7 +179,7 @@ mod actions {
             /// Convert the random seed to a number of rocks to spawn, [0, MAX_ROCKS_AT_SPAWN]
             let mut random_int: u256 = random_seed.into();
             random_int = random_int % (MAX_ROCKS_AT_SPAWN + 1).into();
-            let number_of_rocks: u8 = random_int.try_into().unwrap();
+            let number_of_rocks = random_int;
             /// Place the rocks in the garden
             let mut i = 0;
             loop {
@@ -198,7 +192,6 @@ mod actions {
                 /// Convert the random seed to a cell index, [0, DIM^2)
                 let random_cell_index = (random_int % ((DIM * DIM).into()));
                 /// Get the garden cell
-
                 // @dev todo: ask about this; u16 and u256 work here, 
                 // is there a default val or will an overflow throw an error
                 let x: u16 = random_cell_index.try_into().unwrap();
@@ -206,7 +199,6 @@ mod actions {
                 // let mut garden_cell: GardenCell = get!(
                 //     world, (player, random_cell_index), (GardenCell,)
                 // );
-                // world, (player, random_cell_index), (GardenCell,)
                 garden_cell.set_has_rock(true);
                 /// Update the garden cell
                 set!(world, (garden_cell,));
@@ -222,8 +214,8 @@ mod actions {
                 random_seed = poseidon_hash_span((array![random_seed]).span());
                 /// Convert the random seed to a number of seeds to mint, [1, NUMBER_OF_PLANT_ASSETS]
                 random_int = random_seed.into();
-
                 let token_id: u256 = ((random_int % NUMBER_OF_PLANT_ASSETS.into()) + 1);
+                /// Mint the seed
                 self.mint_seed(token_id);
             }
         }
@@ -275,7 +267,7 @@ mod actions {
         /// Water a plant at the given garden index
         fn water_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
-            // self.assert_cell_index_in_bounds(cell_index);
+            self.assert_cell_index_in_bounds(cell_index);
             self.refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
@@ -328,9 +320,11 @@ mod actions {
         // emit!(world, DeadPlantRemoved { player, garden_cell });
         }
 
+        /// Plants the seed type at the given garden index
         fn plant_seed(self: @ContractState, seed_id: u256, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
+
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
@@ -345,6 +339,7 @@ mod actions {
         // emit!(world, DeadPlantRemoved { player, garden_cell });
         }
 
+        /// Harvest the plant at the given garden index
         fn harvest_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);

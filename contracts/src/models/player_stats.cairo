@@ -52,7 +52,8 @@ impl PlayerStatsImpl of PlayerStatsTrait {
 mod tests {
     use debug::PrintTrait;
     use super::{PlayerStats, PlayerStatsTrait, PlayerStatsImpl};
-    // use super::super::systems::actions::actions::TIME_TO_REMOVE_ROCK;
+    use stark_sprouts::systems::actions::actions::TIME_TO_REMOVE_ROCK;
+
 
     fn init_player_stats() -> PlayerStats {
         PlayerStats {
@@ -90,11 +91,14 @@ mod tests {
 
     #[test]
     #[available_gas(1000000)]
-    #[ignore]
     fn test_finish_rock_removal() {
+        starknet::testing::set_block_timestamp(123);
         let mut player_stats = init_player_stats();
         player_stats.start_rock_removal(1);
-        /// Need to jump block time to test properly
+        assert(player_stats.rock_pending == true, 'rock_pending should be true');
+        assert(player_stats.rock_pending_cell_index == 1, 'wrong rock_pending_cell_index');
+        assert(player_stats.rock_removal_started_date == 123, 'wrong rock_removal_started_date');
+        starknet::testing::set_block_timestamp(123 + TIME_TO_REMOVE_ROCK);
         player_stats.finish_rock_removal();
         assert(player_stats.rock_pending == false, 'rock_pending should be false');
         assert(player_stats.rock_pending_cell_index == 0, 'wrong rock_pending_cell_index');
