@@ -10,20 +10,20 @@ type AssetLoaderProps = {
 };
 
 const texturePaths = {
-  grass1: "src/textures/tiles/grass/grass_06.png",
-  grass2: "src/textures/tiles/grass/grass_08.png",
-  grass3: "src/textures/tiles/grass/grass_14.png",
-  grass4: "src/textures/tiles/grass/grass_15.png",
-  plot: "src/textures/tiles/sand/sand_07.png",
-  topLeftCorner: "src/textures/tiles/sand/sand_00.png",
-  topRightCorner: "src/textures/tiles/sand/sand_02.png",
-  bottomRightCorner: "src/textures/tiles/sand/sand_14.png",
-  bottomLeftCorner: "src/textures/tiles/sand/sand_12.png",
-  leftEdge: "src/textures/tiles/sand/sand_06.png",
-  rightEdge: "src/textures/tiles/sand/sand_08.png",
-  topEdge: "src/textures/tiles/sand/sand_01.png",
-  bottomEdge: "src/textures/tiles/sand/sand_13.png",
-  plant: "src/textures/plants/salvia/salvia_11.png",
+  grass1: "static/textures/tiles/grass/grass_06.png",
+  grass2: "static/textures/tiles/grass/grass_08.png",
+  grass3: "static/textures/tiles/grass/grass_14.png",
+  grass4: "static/textures/tiles/grass/grass_15.png",
+  plot: "static/textures/tiles/sand/sand_07.png",
+  topLeftCorner: "static/textures/tiles/sand/sand_00.png",
+  topRightCorner: "static/textures/tiles/sand/sand_02.png",
+  bottomRightCorner: "static/textures/tiles/sand/sand_14.png",
+  bottomLeftCorner: "static/textures/tiles/sand/sand_12.png",
+  leftEdge: "static/textures/tiles/sand/sand_06.png",
+  rightEdge: "static/textures/tiles/sand/sand_08.png",
+  topEdge: "static/textures/tiles/sand/sand_01.png",
+  bottomEdge: "static/textures/tiles/sand/sand_13.png",
+  plant: "static/textures/plants/salvia/salvia_11.png",
 };
 
 export const AssetLoader = ({ children }: AssetLoaderProps) => {
