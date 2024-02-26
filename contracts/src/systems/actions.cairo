@@ -30,6 +30,7 @@ mod actions {
             player_stats::{PlayerStats, PlayerStatsImpl},
             seed_interface::{ISeedDispatcher, ISeedDispatcherTrait},
             token_lookups::{TokenLookups, TokenLookupsImpl, TokenLookupsTrait},
+            world_init::{WorldInit, WorldInitImpl, WorldInitTrait},
         },
     };
     use starknet::{
@@ -149,8 +150,13 @@ mod actions {
             assert(seed_addresses.len() == NUMBER_OF_PLANT_ASSETS.into(), 'Array invalid');
 
             let world = self.world_dispatcher.read();
+            /// Set the world as initialzed 
+            /// @dev Reverts if the world has already been initialized
+            let mut world_init: WorldInit = get!(world, (0), (WorldInit,));
+            world_init.init_world();
+
             /// Set the token lookups for each seed
-            let mut i = 1;
+            let mut i = 1_u256;
             loop {
                 match seed_addresses.pop_front() {
                     Option::Some(seed_address) => {
@@ -180,6 +186,17 @@ mod actions {
             let mut random_int: u256 = random_seed.into();
             random_int = random_int % (MAX_ROCKS_AT_SPAWN + 1).into();
             let number_of_rocks = random_int;
+            /// Initializes all cells into storage
+            /// @dev Might be more effecient way to do this and avoid rock loop but this should work for now
+            let mut i = 0;
+            loop {
+                if i == DIM * DIM {
+                    break;
+                }
+                let mut garden_cell: GardenCell = get!(world, (player, i), (GardenCell,));
+                garden_cell.set_has_rock(false);
+                set!(world, (garden_cell,));
+            };
             /// Place the rocks in the garden
             let mut i = 0;
             loop {
@@ -194,13 +211,12 @@ mod actions {
                 /// Get the garden cell
                 // @dev todo: ask about this; u16 and u256 work here, 
                 // is there a default val or will an overflow throw an error
-                let x: u16 = random_cell_index.try_into().unwrap();
-                let mut garden_cell: GardenCell = get!(world, (player, x), (GardenCell,));
-                // let mut garden_cell: GardenCell = get!(
-                //     world, (player, random_cell_index), (GardenCell,)
-                // );
+                let as_correct_type: u16 = random_cell_index.try_into().unwrap();
+                let mut garden_cell: GardenCell = get!(
+                    world, (player, as_correct_type), (GardenCell,)
+                );
+                /// Set the rock
                 garden_cell.set_has_rock(true);
-                /// Update the garden cell
                 set!(world, (garden_cell,));
                 i += 1;
             };
