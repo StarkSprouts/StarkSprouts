@@ -1,4 +1,4 @@
-import { Button } from "./button";
+import { Button } from "./Button";
 
 export const Nav = () => {
   return (
@@ -6,9 +6,6 @@ export const Nav = () => {
       <div>
         <Button>
           <a href="/game">Launch App</a>
-        </Button>
-        <Button>
-          <a href="/test">Test App</a>
         </Button>
       </div>
     </nav>
