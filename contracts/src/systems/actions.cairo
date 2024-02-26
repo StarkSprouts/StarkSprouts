@@ -1,6 +1,7 @@
-// define the interface
 #[starknet::interface]
 trait IActions<TContractState> {
+    /// Set token lookups 
+    fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
     /// Initialize a garden for the player
     fn initialize_garden(self: @TContractState);
     /// Remove a rock from the garden
@@ -144,6 +145,29 @@ mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
+        /// Set token lookups
+        fn set_token_lookups(
+            self: @ContractState, mut seed_addresses: Array<starknet::ContractAddress>
+        ) {
+            /// Verify caller is admin
+            /// @dev todo: setup admin role/const
+            /// Check all seed addresses are passed in
+            assert(seed_addresses.len() == NUMBER_OF_PLANT_ASSETS.into(), 'Array invalid');
+
+            let world = self.world_dispatcher.read();
+            /// Set the token lookups for each seed
+            let mut i = 1;
+            loop {
+                match seed_addresses.pop_front() {
+                    Option::Some(seed_address) => {
+                        let mut token_lookup: TokenLookups = get!(world, (i), (TokenLookups,));
+                        i += 1;
+                    },
+                    Option::None => { break; }
+                };
+            };
+        }
+
         /// Initializes a player's garden
         fn initialize_garden(self: @ContractState) {
             self.assert_player_does_not_have_garden();
