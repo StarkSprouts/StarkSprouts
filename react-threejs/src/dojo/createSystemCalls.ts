@@ -27,6 +27,11 @@ export function createSystemCalls(
           })
         )
       );
+      console.log(
+        `Garden initialized: ${transaction_hash} -- ${JSON.stringify(
+          contractComponents
+        )}`
+      );
     } catch (e) {
       console.error(e);
     }

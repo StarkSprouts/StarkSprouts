@@ -1,6 +1,8 @@
 import { Button } from "../components/ui/button";
 import { useDojo } from "@/dojo/useDojo";
 import type { Account } from "starknet";
+import { useComponentValue } from "@dojoengine/react";
+import { getEntityIdFromKeys } from "@dojoengine/utils";
 
 export default function TestPage() {
   const {
@@ -16,8 +18,16 @@ export default function TestPage() {
       },
       clientComponents: { GardenCell },
     },
-    account: { account },
+    account: { account, isDeploying, list },
   } = useDojo();
+
+  if (isDeploying) {
+    return <div>Deploying...</div>;
+  }
+
+  if (!account) {
+    return <div>No account</div>;
+  }
 
   const handleInitGarden = () => {
     console.log("Init World");
@@ -47,6 +57,12 @@ export default function TestPage() {
     console.log("Harvest Plant");
     harvestPlant(account, 1);
   };
+
+  const gardenCells = useComponentValue(
+    GardenCell,
+    getEntityIdFromKeys([BigInt(account.address)])
+  );
+  console.log("gardenCells", gardenCells);
 
   return (
     <div className="relative w-screen h-screen flex flex-col">
