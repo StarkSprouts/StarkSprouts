@@ -9,7 +9,7 @@ export default function HomePage() {
       <div className="flex justify-center items-center flex-col">
         <h1 className="text-6xl">Welcome to Stark Sprouts</h1>
         <img
-          src="../assets/logo.png"
+          src="../static/logo.png"
           alt="Stark Sprouts"
           width={200}
           height={200}
