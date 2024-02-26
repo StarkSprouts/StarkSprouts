@@ -16,8 +16,8 @@ export type AssetsType = {
 
 export const AssetLoader = ({ children }: AssetLoaderProps) => {
   const textures = useLoader(TextureLoader, [
-    "src/assets/tiles/Grass/grass_15.png",
-    "src/assets/tiles/Sand/sand_09.png",
+    "src/textures/tiles/Grass/grass_15.png",
+    "src/textures/tiles/Sand/sand_09.png",
   ]);
 
   const assets = {
