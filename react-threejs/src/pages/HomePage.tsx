@@ -1,4 +1,4 @@
-import { Nav } from "@/components/ui/Nav";
+import { Nav } from "@/components/ui/nav";
 
 export default function HomePage() {
   return (

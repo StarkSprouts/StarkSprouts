@@ -1,4 +1,4 @@
-import { Button } from "../components/ui/Button";
+import { Button } from "../components/ui/button";
 import { useDojo } from "@/dojo/useDojo";
 import type { Account } from "starknet";
 import { useComponentValue } from "@dojoengine/react";
