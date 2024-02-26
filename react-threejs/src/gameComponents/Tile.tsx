@@ -3,6 +3,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { useAssets } from "@/gameComponents/AssetLoader";
 import { PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
 import { getGardenPositionByCell } from "@/utils/gridHelper";
+import { Plant } from "@/gameComponents/Plant";
 
 type TileProps = {
   type: TileType;
@@ -23,6 +24,7 @@ export type AssetsType = {
   rightEdge: any;
   topEdge: any;
   bottomEdge: any;
+  plant: any;
 };
 
 export enum TileType {
@@ -41,7 +43,6 @@ export enum TileType {
 export const Tile = ({ type, position }: TileProps) => {
   const [color, setColor] = React.useState("white");
 
-  const { scene } = useThree();
   const {
     grass1,
     grass2,
@@ -56,6 +57,7 @@ export const Tile = ({ type, position }: TileProps) => {
     rightEdge,
     topEdge,
     bottomEdge,
+    plant,
   } = useAssets() as AssetsType;
 
   // Example: Add different objects based on the tile type
@@ -99,13 +101,12 @@ export const Tile = ({ type, position }: TileProps) => {
     console.log("Tile clicked");
     setColor("red");
   };
-
-  useFrame(() => {});
-
   return (
-    <mesh position={[...position, 0]} onClick={handleClick}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial attach="material" color={color} map={texture} />
-    </mesh>
+    <>
+      <mesh position={[...position, 0]} onClick={handleClick}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial attach="material" color={color} map={texture} />
+      </mesh>
+    </>
   );
 };

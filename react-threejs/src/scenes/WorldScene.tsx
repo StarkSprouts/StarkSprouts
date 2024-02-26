@@ -1,5 +1,6 @@
 import { Tile } from "@/gameComponents/Tile";
 import { TileType } from "@/gameComponents/Tile";
+import { Plant } from "@/gameComponents/Plant";
 
 const tileMap = `
 GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
