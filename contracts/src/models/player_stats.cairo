@@ -11,14 +11,19 @@ struct PlayerStats {
 }
 
 trait PlayerStatsTrait {
-    fn toggle_has_garden(ref self: PlayerStats);
+    fn set_has_garden(ref self: PlayerStats, has_garden: bool);
+    // fn toggle_has_garden(ref self: PlayerStats);
     fn start_rock_removal(ref self: PlayerStats, cell_index: u16);
     fn finish_rock_removal(ref self: PlayerStats);
 }
 
 impl PlayerStatsImpl of PlayerStatsTrait {
-    fn toggle_has_garden(ref self: PlayerStats) {
-        self.has_garden = !self.has_garden;
+    // fn toggle_has_garden(ref self: PlayerStats) {
+    //     self.has_garden = !self.has_garden;
+    // }
+
+    fn set_has_garden(ref self: PlayerStats, has_garden: bool) {
+        self.has_garden = has_garden;
     }
 
     fn start_rock_removal(ref self: PlayerStats, cell_index: u16) {
@@ -51,11 +56,12 @@ mod tests {
 
     #[test]
     #[available_gas(1000000)]
-    fn test_toggle_has_garden() {
+    fn test_set_has_garden() {
         let mut player_stats = init_player_stats();
-        player_stats.toggle_has_garden();
+        assert(player_stats.has_garden == false, 'has_garden should be false');
+        player_stats.set_has_garden(true);
         assert(player_stats.has_garden == true, 'has_garden should be true');
-        player_stats.toggle_has_garden();
+        player_stats.set_has_garden(false);
         assert(player_stats.has_garden == false, 'has_garden should be false');
     }
 
