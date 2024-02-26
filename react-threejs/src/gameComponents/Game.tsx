@@ -29,7 +29,7 @@ export const Game = ({ children, canvasWidth, canvasHeight }: GameProps) => {
         fov: 100,
         near: 0.1,
         far: 1000,
-        zoom: 1.5,
+        zoom: 0.9,
       }}
       style={{ width: canvasWidth, height: canvasHeight }}
     >

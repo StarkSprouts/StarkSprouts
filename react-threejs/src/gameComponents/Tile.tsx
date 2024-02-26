@@ -2,6 +2,7 @@ import React from "react";
 import { useThree } from "@react-three/fiber";
 import { useAssets } from "@/gameComponents/AssetLoader";
 import { PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
+import { getGardenPositionByCell } from "@/utils/gridHelper";
 
 type TileProps = {
   type: TileType;
@@ -9,7 +10,10 @@ type TileProps = {
 };
 
 export type AssetsType = {
-  grass: any;
+  grass1: any;
+  grass2: any;
+  grass3: any;
+  grass4: any;
   plot: any;
   topLeftCorner: any;
   topRightCorner: any;
@@ -37,7 +41,10 @@ export enum TileType {
 export const Tile = ({ type, position }: TileProps) => {
   const { scene } = useThree();
   const {
-    grass,
+    grass1,
+    grass2,
+    grass3,
+    grass4,
     plot,
     topLeftCorner,
     topRightCorner,
@@ -53,8 +60,9 @@ export const Tile = ({ type, position }: TileProps) => {
   let texture;
   switch (type as TileType) {
     case TileType.Grass:
-      console.log("Grass");
-      texture = grass;
+      // randomly choose a grass texture
+      const grassTextures = [grass1, grass2, grass3, grass4];
+      texture = grassTextures[Math.floor(Math.random() * grassTextures.length)];
       break;
     case TileType.Plot:
       texture = plot;
@@ -84,8 +92,11 @@ export const Tile = ({ type, position }: TileProps) => {
       texture = bottomEdge;
       break;
   }
-
   if (!texture) return null;
+  if (getGardenPositionByCell(244).toString() === position.toString()) {
+    console.log("position", position);
+    texture = grass1;
+  }
   // Create a plane geometry for the tile
   const geometry = new PlaneGeometry(1, 1);
   const material = new MeshBasicMaterial({ map: texture });

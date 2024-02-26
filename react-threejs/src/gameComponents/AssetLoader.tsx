@@ -10,7 +10,10 @@ type AssetLoaderProps = {
 };
 
 const texturePaths = {
-  grass: "src/textures/tiles/grass/grass_15.png",
+  grass1: "src/textures/tiles/grass/grass_06.png",
+  grass2: "src/textures/tiles/grass/grass_08.png",
+  grass3: "src/textures/tiles/grass/grass_14.png",
+  grass4: "src/textures/tiles/grass/grass_15.png",
   plot: "src/textures/tiles/sand/sand_07.png",
   topLeftCorner: "src/textures/tiles/sand/sand_00.png",
   topRightCorner: "src/textures/tiles/sand/sand_02.png",
@@ -24,7 +27,10 @@ const texturePaths = {
 
 export const AssetLoader = ({ children }: AssetLoaderProps) => {
   const textures = useLoader(TextureLoader, [
-    texturePaths.grass,
+    texturePaths.grass1,
+    texturePaths.grass2,
+    texturePaths.grass3,
+    texturePaths.grass4,
     texturePaths.plot,
     texturePaths.topLeftCorner,
     texturePaths.topRightCorner,
@@ -37,16 +43,19 @@ export const AssetLoader = ({ children }: AssetLoaderProps) => {
   ]);
 
   const assets = {
-    grass: textures[0],
-    plot: textures[1],
-    topLeftCorner: textures[2],
-    topRightCorner: textures[3],
-    bottomRightCorner: textures[4],
-    bottomLeftCorner: textures[5],
-    leftEdge: textures[6],
-    rightEdge: textures[7],
-    topEdge: textures[8],
-    bottomEdge: textures[9],
+    grass1: textures[0],
+    grass2: textures[1],
+    grass3: textures[2],
+    grass4: textures[3],
+    plot: textures[4],
+    topLeftCorner: textures[5],
+    topRightCorner: textures[6],
+    bottomRightCorner: textures[7],
+    bottomLeftCorner: textures[8],
+    leftEdge: textures[9],
+    rightEdge: textures[10],
+    topEdge: textures[11],
+    bottomEdge: textures[12],
   };
 
   return (
