@@ -1,4 +1,4 @@
-import { Button } from "../components/ui/Button";
+import { StyledButton } from "@/components/StyledButton";
 import { useDojo } from "@/dojo/useDojo";
 import type { Account } from "starknet";
 import { useComponentValue } from "@dojoengine/react";
@@ -68,13 +68,16 @@ export default function TestPage() {
     <div className="relative w-screen h-screen flex flex-col">
       <main className="flex flex-col left-0 relative top-0 overflow-hidden grow">
         <div>
-          <Button label="Init Garden" onPress={handleInitGarden} />
-          <Button label="Refresh Garden" onPress={handleRefreshGarden} />
-          <Button label="Remove Rock" onPress={handleRemoveRock} />
-          <Button label="Remove Dead Plant" onPress={handleRemoveDeadPlant} />
-          <Button label="Water Plant" onPress={handleWaterPlant} />
-          <Button label="Plant Seed" onPress={handlePlantSeed} />
-          <Button label="Harvest Plant" onPress={handleHarvestPlant} />
+          <StyledButton label="Init Garden" onPress={handleInitGarden} />
+          <StyledButton label="Refresh Garden" onPress={handleRefreshGarden} />
+          <StyledButton label="Remove Rock" onPress={handleRemoveRock} />
+          <StyledButton
+            label="Remove Dead Plant"
+            onPress={handleRemoveDeadPlant}
+          />
+          <StyledButton label="Water Plant" onPress={handleWaterPlant} />
+          <StyledButton label="Plant Seed" onPress={handlePlantSeed} />
+          <StyledButton label="Harvest Plant" onPress={handleHarvestPlant} />
         </div>
       </main>
     </div>
