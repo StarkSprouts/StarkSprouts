@@ -2,6 +2,8 @@ const { Account, json, RpcProvider } = require("starknet");
 const { config } = require("dotenv");
 const { readFileSync } = require("fs");
 const { exec } = require("child_process");
+const util = require("util");
+const execAsync = util.promisify(require("child_process").exec);
 const env = config({ path: "deploy/.env" }).parsed;
 
 /**
@@ -15,9 +17,154 @@ const SIERA_PATH = "./token/target/dev/token_Seed.contract_class.json";
 const CASM_PATH = "./token/target/dev/token_Seed.compiled_contract_class.json";
 const provider = new RpcProvider({ nodeUrl: NODE_URL });
 const account = new Account(provider, WALLET_ADDRESS, PRIVATE_KEY);
+const profile = ENVIRONMENT == "LOCAL" ? `` : `--profile slot `;
 
-// Deploy a seed contract with specific constructor arguments
-const deployContract = async (constructorCalldata) => {
+/// Main ///
+
+/// Deploy all seed contracts
+/// Returns an array of deployed contract addresses
+const deploySeeds = async (dojo_address) => {
+  const seedTypes = [
+    "Bell",
+    "Bulba",
+    "Cactus",
+    "Chamomile",
+    "Fern",
+    "Lily",
+    "Mushroom",
+    "Rose",
+    "Salvia",
+    "Spiral",
+    "Sprout",
+    "Violet",
+    "Zigzag",
+  ];
+
+  // const constructorArgsList = [
+  //   [account.address, "SeedToken", "Bell", dojo_address],
+  //   [account.address, "SeedToken", "Bulba", dojo_address],
+  //   [account.address, "SeedToken", "Cactus", dojo_address],
+  //   [account.address, "SeedToken", "Chamomile", dojo_address],
+  //   [account.address, "SeedToken", "Fern", dojo_address],
+  //   [account.address, "SeedToken", "Lily", dojo_address],
+  //   [account.address, "SeedToken", "Mushroom", dojo_address],
+  //   [account.address, "SeedToken", "Rose", dojo_address],
+  //   [account.address, "SeedToken", "Salvia", dojo_address],
+  //   [account.address, "SeedToken", "Spiral", dojo_address],
+  //   [account.address, "SeedToken", "Sprout", dojo_address],
+  //   [account.address, "SeedToken", "Violet", dojo_address],
+  //   [account.address, "SeedToken", "Zigzag", dojo_address],
+  // ];
+
+  // for (const args of constructorArgsList) {
+  //   addresses.push(await _deployContract(args));
+  // }
+
+  let addresses = [];
+  seedTypes.forEach(async (seedType) => {
+    const args = [account.address, "SeedToken", seedType, dojo_address];
+    addresses.push(await _deployContract(args));
+  });
+
+  return addresses;
+};
+
+/// Deploy world and set sozo auth
+const deployWorld = async () => {
+  const { worldAddress, actionsAddress } = await _buildAndMigrateToSozo();
+  // const { worldAddress, actionsAddress } = {
+  //   worldAddress:
+  //     "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
+  //   actionsAddress:
+  //     "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
+  // };
+
+  console.log("Authorizing...\n");
+
+  const makeAuthCommand = (model) => {
+    return `sozo ${profile}auth writer ${model} ${actionsAddress} --world ${worldAddress} --rpc-url ${NODE_URL} --account-address ${account.address} --private-key ${PRIVATE_KEY} --wait`;
+  };
+
+  const authorizeModel = async (model) => {
+    console.log(`Authorizing ${model}...\n`);
+    try {
+      const { stdout } = await execAsync(makeAuthCommand(model));
+      // await provider.waitForTransaction(stdout.split(":")[1].trim());
+      console.log("Auth transaction complete!\n");
+    } catch (error) {
+      console.error(`exec error: ${error}`);
+    }
+  };
+
+  const runAuthorizations = async () => {
+    await authorizeModel("GardenCell");
+    await authorizeModel("PlayerStats");
+    await authorizeModel("TokenLookups");
+  };
+
+  await runAuthorizations();
+
+  return { worldAddress, actionsAddress };
+};
+
+// const deployWorld = async () => {
+//   const models = ["GardenCell", "PlayerStats", "TokenLookups"];
+//   const { worldAddress, actionsAddress } = await _buildAndMigrateToSozo();
+
+//   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+//   const execPromise = (command) =>
+//     new Promise((resolve, reject) => {
+//       exec(command, (error, stdout, stderr) => {
+//         if (error) {
+//           reject(error);
+//         } else {
+//           resolve(stdout);
+//         }
+//       });
+//     });
+
+//   console.log("Authorizing sozo...\n");
+//   for (const model of models) {
+//     // const command = `sozo auth writer ${model} ${actionsAddress} --world ${worldAddress}`;
+//     const command = `sozo ${profile}auth writer ${model} ${actionsAddress} --world ${worldAddress} --rpc-url ${NODE_URL} --account-address ${account.address} --private-key ${PRIVATE_KEY}`;
+
+//     try {
+//       const stdout = await execPromise(command);
+//       console.log(stdout);
+//       console.log("Waiting 1 second for auth to process...");
+//       await sleep(1000); // This pauses for 1 second before continuing the loop
+//     } catch (error) {
+//       console.error(`exec error: ${error}`);
+//     }
+//   }
+//   return { worldAddress, actionsAddress };
+// };
+
+/// Set token lookups
+const setTokenLookups = async (
+  worldAddress,
+  actionsAddress,
+  seed_addresses
+) => {
+  /// run sozo execute
+  const command = `sozo ${profile}execute ${actionsAddress} set_token_lookups --calldata ${seed_addresses.length},${seed_addresses}`;
+  //   seed_addresses.length
+  // } ${seed_addresses.join(" ")}`;
+
+  exec(command, (error, stdout) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(stdout);
+  });
+};
+
+/// Internals ///
+
+/// Deploy a seed contract with specific constructor arguments
+/// Returns the deployed contract address
+const _deployContract = async (constructorCalldata) => {
   const contract = json.parse(readFileSync(SIERA_PATH).toString("ascii"));
   const casm = json.parse(readFileSync(CASM_PATH).toString("ascii"));
   console.log(`Deploying ${constructorCalldata[2]} contract...`);
@@ -37,9 +184,9 @@ const deployContract = async (constructorCalldata) => {
 };
 
 /// Build sozo packages and migrate to katana
-/// todo: need to add sozo auth
-const buildAndMigrateToSozo = async () => {
-  const command = "cd contracts && sozo build && sozo migrate";
+/// Returns the world and actions contract addresses
+const _buildAndMigrateToSozo = async () => {
+  const command = `cd contracts && sozo build && sozo ${profile} migrate`;
   console.log("\nBuilding and migrating to sozo...\n");
 
   // Use a promise to handle the asynchronous execution
@@ -84,14 +231,9 @@ const buildAndMigrateToSozo = async () => {
           : "Actions address not found."
       );
 
-      resolve(worldAddress); // Resolve the promise with worldAddress
+      resolve({ worldAddress, actionsAddress }); // Resolve the promise with worldAddress
     });
   });
-};
-
-/// Set token lookups
-const setTokenLookups = async (worldAddress, tokenAddresses) => {
-  /// run sozo execute
 };
 
 // going to need a function to deploy world, then deploy all seeds, then call set_token_lookups
@@ -99,27 +241,25 @@ const setTokenLookups = async (worldAddress, tokenAddresses) => {
 // Deploy all seed contracts
 const main = async () => {
   try {
-    const constructorArgsList = [
-      [account.address, "SeedToken", "Bell", "dojo_address"],
-      [account.address, "SeedToken", "Bulba", "dojo_address"],
-      [account.address, "SeedToken", "Cactus", "dojo_address"],
-      [account.address, "SeedToken", "Chamomile", "dojo_address"],
-      [account.address, "SeedToken", "Fern", "dojo_address"],
-      [account.address, "SeedToken", "Lily", "dojo_address"],
-      [account.address, "SeedToken", "Mushroom", "dojo_address"],
-      [account.address, "SeedToken", "Rose", "dojo_address"],
-      [account.address, "SeedToken", "Salvia", "dojo_address"],
-      [account.address, "SeedToken", "Spiral", "dojo_address"],
-      [account.address, "SeedToken", "Sprout", "dojo_address"],
-      [account.address, "SeedToken", "Violet", "dojo_address"],
-      [account.address, "SeedToken", "Zigzag", "dojo_address"],
-    ];
+    // await deploySeeds();
 
-    await buildAndMigrateToSozo();
-
-    // for (const args of constructorArgsList) {
-    //   await deployContract(args);
-    // }
+    let { worldAddress, actionsAddress } = await deployWorld();
+    /// need to wait for txn to mint for this txn
+    // await setTokenLookups(worldAddress, actionsAddress, [
+    //   "1",
+    //   "2",
+    //   "3",
+    //   "4",
+    //   "5",
+    //   "6",
+    //   "7",
+    //   "8",
+    //   "9",
+    //   "10",
+    //   "11",
+    //   "12",
+    //   "13",
+    // ]);
   } catch (error) {
     console.error(`Operation failed! Reason: ${error.message}`);
   }
