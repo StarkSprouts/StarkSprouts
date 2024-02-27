@@ -3,9 +3,9 @@ use debug::PrintTrait;
 
 /// @dev Plants lose 1pt of water every 30 seconds
 const WATER_LOSS_RATE: u64 = 1; // 1pt per time_unit
-const WATER_TIME_UNIT: u64 = 30; // 60 seconds
+const WATER_TIME_UNIT: u64 = 1;
 // @dev Time for plant to grow in seconds, and time for plant to be ready for harvest
-const TIME_FOR_PLANT_TO_GROW: u64 = 120;
+const TIME_FOR_PLANT_TO_GROW: u64 = 3;
 
 
 #[derive(Copy, Drop, Serde, Introspect)]
@@ -276,19 +276,15 @@ mod tests {
         let mut plant = timed_plant();
         assert(plant.water_level == 100, 'Water level should be 100');
 
-        set_block_timestamp(get_block_timestamp() + 30);
+        set_block_timestamp(get_block_timestamp() + 2);
         plant.lose_water();
-        assert(plant.water_level == 99, 'Water level should be 99');
+        assert(plant.water_level == 98, 'Water level should be 99');
+
+        set_block_timestamp(get_block_timestamp() + 8);
+        plant.lose_water();
+        assert(plant.water_level == 90, 'Water level should be 96');
 
         set_block_timestamp(get_block_timestamp() + 90);
-        plant.lose_water();
-        assert(plant.water_level == 96, 'Water level should be 96');
-
-        set_block_timestamp(get_block_timestamp() + 29);
-        plant.lose_water();
-        assert(plant.water_level == 96, 'Water level should be 96');
-
-        set_block_timestamp(get_block_timestamp() + 30 * 100);
         plant.lose_water();
         assert(plant.water_level == 0, 'Water level should be 0');
         assert(plant.is_dead, 'Plant should be dead');
@@ -303,20 +299,20 @@ mod tests {
 
         plant.update_growth();
 
-        set_block_timestamp(get_block_timestamp() + 120);
+        set_block_timestamp(get_block_timestamp() + 3);
         plant.update_growth();
         assert(plant.growth_stage == 1, 'Growth stage should be 1');
 
-        set_block_timestamp(get_block_timestamp() + 240);
+        set_block_timestamp(get_block_timestamp() + 6);
         plant.update_growth();
         assert(plant.growth_stage == 3, 'Growth stage should be 3');
 
-        set_block_timestamp(get_block_timestamp() + 119);
+        set_block_timestamp(get_block_timestamp() + 2);
         plant.update_growth();
         assert(plant.growth_stage == 3, 'Growth stage should be 3');
 
         loop {
-            set_block_timestamp(get_block_timestamp() + 120);
+            set_block_timestamp(get_block_timestamp() + 3);
             plant.water_plant();
             if plant.growth_stage == 14 {
                 break;
@@ -325,15 +321,15 @@ mod tests {
         assert(plant.growth_stage == 14, 'Growth stage should be 14');
         assert(!plant.is_harvestable, 'Should not be harvestable');
 
-        set_block_timestamp(get_block_timestamp() + 119);
+        set_block_timestamp(get_block_timestamp() + 2);
         plant.water_plant();
         assert(!plant.is_harvestable, 'Should not be harvestable');
 
-        set_block_timestamp(get_block_timestamp() + 2);
+        set_block_timestamp(get_block_timestamp() + 1);
         plant.water_plant();
         assert(plant.is_harvestable, 'Should be harvestable');
 
-        set_block_timestamp(get_block_timestamp() + 123);
+        set_block_timestamp(get_block_timestamp() + 5);
         plant.water_plant();
         plant.harvest();
         assert(!plant.is_harvestable, 'Should not be harvestable');
