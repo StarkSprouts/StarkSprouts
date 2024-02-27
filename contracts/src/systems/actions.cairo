@@ -13,10 +13,29 @@ use stark_sprouts::{
 
 #[starknet::interface]
 trait IActions<TContractState> {
+    /// Reads ///
+
+    /// Get the token lookups for the given seed id
+    fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
+    /// Get the player's stats 
+    fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
+    /// Get a garden cell 
+    fn get_garden_cell(
+        self: @TContractState, player: ContractAddress, cell_index: u16
+    ) -> GardenCell;
+    /// Get an array of garden cells
+    fn get_garden_cells(
+        self: @TContractState, player: ContractAddress, cell_indexes: Array<u16>
+    ) -> Array<GardenCell>;
+    /// Get a plant from a garden cell
+    fn get_plant(self: @TContractState, player: ContractAddress, cell_index: u16) -> Plant;
     /// Set seed token address lookups
     fn set_token_lookups(
         ref self: TContractState, seed_addresses: Array<starknet::ContractAddress>
     );
+
+    /// Writes ///
+
     /// Initialize a garden for the player with random rocks and mint the player some seeds
     fn initialize_garden(ref self: TContractState);
     /// Remove a rock from the garden
@@ -34,27 +53,9 @@ trait IActions<TContractState> {
     /// Refresh the state of the garden for specific cells
     fn refresh_plots(ref self: TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
+    /// @dev This is the main entry point being used as of now, refresh plot(s) 
+    /// is more optimal but frontend speeedbumps stopped us from getting to use it. 
     fn refresh_garden(ref self: TContractState);
-
-    /// Get the token lookups for the given seed id
-    fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
-
-    /// Get the player's stats 
-    fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
-    /// Get a garden cell 
-    fn get_garden_cell(
-        self: @TContractState, player: ContractAddress, cell_index: u16
-    ) -> GardenCell;
-    /// Get an array of garden cells
-    fn get_garden_cells(
-        self: @TContractState, player: ContractAddress, cell_indexes: Array<u16>
-    ) -> Array<GardenCell>;
-
-    /// Get a plant from a garden cell
-    fn get_plant(self: @TContractState, player: ContractAddress, cell_index: u16) -> Plant;
-// get garden cells, 
-
-// get ...
 }
 
 #[dojo::contract]
@@ -384,7 +385,7 @@ mod actions {
                     break;
                 }
                 let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-                /// If the cell has a plant, updates its water level and growth
+                /// If the cell has a plant, update its water level and growth
                 if garden_cell.plot_status() == PlotStatus::AlivePlant {
                     self._refresh_plot(cell_index);
                 }
