@@ -13,7 +13,6 @@ import { useComponentValue } from "@dojoengine/react";
 
 export default function GamePage() {
   const [width, height] = useWindowSize();
-  const [gardenCells, setGardenCells] = useState<GardenCellType[]>([]); // [GardenCellType
   const {
     account: { account },
     setup: {
@@ -22,32 +21,14 @@ export default function GamePage() {
     },
   } = useDojo();
 
-  const localGardenCell = useComponentValue(
-    GardenCell,
-    getEntityIdFromKeys([BigInt(account.address), BigInt(224)])
-  );
-  console.log("Local garden cell: ", localGardenCell);
-
   const handleInitGarden = () => {
     console.log("init world");
     initializeGarden(account);
   };
 
   const handleRefreshGarden = async () => {
-    if (!account) {
-      return;
-    }
-    console.log(`Account: ${account.address}`);
     console.log("refresh world");
-    await refreshGarden(account);
-    const cells = getComponentValue(
-      GardenCell,
-      getEntityIdFromKeys([BigInt(account.address), BigInt(129)])
-    );
-    //console.log("Garden cells: ", JSON.stringify(cells, null, 2));
-    if (cells) {
-      setGardenCells(cells);
-    }
+    refreshGarden(account);
   };
 
   return (
@@ -58,7 +39,7 @@ export default function GamePage() {
       </div>
       <Game canvasWidth={width} canvasHeight={height}>
         <WorldScene />
-        <GardenCells gardenCells={localGardenCell} />
+        <GardenCells />
       </Game>
     </div>
   );

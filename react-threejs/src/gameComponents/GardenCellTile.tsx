@@ -9,21 +9,6 @@ export type GardenCellProps = {
 };
 
 export const GardenCellTile = ({ cell }: GardenCellProps) => {
-  /*
-  const {
-    account: { account },
-    setup: {
-      clientComponents: { GardenCell },
-      systemCalls: { refreshGarden },
-    },
-  } = useDojo();
-
-  const localGardenCell = useComponentValue(
-    GardenCell,
-    getEntityIdFromKeys([BigInt(account.address), BigInt(cell.cell_index)])
-  );
-  */
-
   const position = getGardenPositionByCell(cell.cell_index);
   console.log("Garden cell: ", cell);
   console.log("Garden cell position: ", position);

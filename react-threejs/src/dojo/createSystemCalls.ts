@@ -23,15 +23,17 @@ export function createSystemCalls(
   { GardenCell }: ClientComponents
 ) {
   const initializeGarden = async (account: Account) => {
-    const entityId = getEntityIdFromKeys([BigInt(account.address)]);
+    //const entityId = getEntityIdFromKeys([BigInt(account.address)]);
 
     // TODO: figure out what this does.what is overriding?
+    /*
     const gardenId = uuid();
     GardenCell.addOverride(gardenId, {
       entity: entityId,
       // @ts-ignore
       value: getComponentValue(GardenCell, entityId),
     });
+    */
 
     try {
       const { transaction_hash } = await client.actions.initializeGarden({
@@ -50,7 +52,7 @@ export function createSystemCalls(
       console.error(e);
     } finally {
       setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
+        //GardenCell.removeOverride(gardenId);
       }, 1000);
     }
   };

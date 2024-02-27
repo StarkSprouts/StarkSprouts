@@ -8,47 +8,45 @@ import { GardenCellTile } from "./GardenCellTile";
 import { getComponentValue } from "@dojoengine/recs";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
 
-export const GardenCells = (gardenCells: GardenCellType[]) => {
-  //const gardenCells = useGardenStore((state) => state.gardenCells);
-  //console.log("Gaden cells: ", JSON.stringify(gardenCells, null, 2));
-  //const setGardenCells = useGardenStore((state) => state.setGardenCells);
-
-  //console.log("Garden cells component: ", JSON.stringify(gardenCells, null, 2));
-
-  /*
-  useEffect(() => {
-    const loadGraden = async (account) => {
-      await refreshGarden(account);
-      const gardenCells = getComponentValue(
-        GardenCell,
-        getEntityIdFromKeys([BigInt(account.address)])
-      );
-      console.log("Garden cells: ", JSON.stringify(gardenCells, null, 2));
-    };
-
-    loadGraden(account);
-  }, [account]);
-  */
+export const GardenCells = () => {
+  const {
+    account: { account },
+    setup: {
+      clientComponents: { GardenCell },
+    },
+  } = useDojo();
 
   /*
-  useEffect(() => {
-    defineSystem(
-      world,
-      [Has(GardenCell)],
-      (entity) =>
-        ({ value: [newValue] }) => {
-          setGardenCells(newValue);
-        }
-    );
-  }, []);
+  const garden = useComponentValue(
+    GardenCell,
+    getEntityIdFromKeys([BigInt(account.address), BigInt(224)])
+  );
+  console.log("Local garden cell: ", localGardenCell);
   */
 
-  if (!gardenCells.gardenCells) return null;
+  const getAllGardenCells = () => {
+    let gardenCells: GardenCellType[] = [];
+    for (let i = 0; i <= 224; i++) {
+      const entityId = getEntityIdFromKeys([
+        BigInt(account.address),
+        BigInt(i),
+      ]);
+
+      const cell = getComponentValue(GardenCell, entityId);
+
+      gardenCells.push(cell);
+    }
+
+    return gardenCells;
+  };
+
+  const localGardenCells = getAllGardenCells();
+
   return (
     <>
       {
         // get all the garden cells and render them
-        Object.values(gardenCells).map((cell: GardenCellType) => {
+        Object.values(localGardenCells).map((cell: GardenCellType) => {
           return <GardenCellTile key={cell.cell_index} cell={cell} />;
         })
       }
