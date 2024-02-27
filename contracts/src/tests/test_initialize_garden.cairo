@@ -122,11 +122,51 @@ mod tests {
         assert(g.plant.water_level == 100, 'wrong water level');
         assert(g.plant.last_water_date == get_block_timestamp(), 'wrong last water date');
         assert(g.plant.is_harvestable, 'plant should be harvestable');
-    // actions.refresh();
-    // let mut g: GardenCell = actions.get_garden_cell(player, 1);
-    // assert(g.plant.water_level == 100, 'wrong water level');
-    // assert(g.plant.last_water_date == 100, 'wrong last water date');
+
+        actions.harvest_plant(1);
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        assert(g.plant.is_harvestable == false, 'didnt harvest');
+        assert(g.plant.last_harvest_date == get_block_timestamp(), 'wrong last harvest date');
+
+        set_block_timestamp(get_block_timestamp() + 10000);
+        actions.refresh_plot(1);
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        assert(g.plant.water_level == 0, 'wrong water level');
+        assert(g.plant.is_dead, 'plant should be dead');
+
+        actions.remove_dead_plant(1);
+
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        assert(g.plant.plant_type == PlantType::None, 'wrong plant type');
+        assert(g.plot_status() == PlotStatus::Empty, 'wrong plot status');
     }
+
+
+    /// test rock removal 
+    #[test]
+    #[available_gas(30000000000)]
+    fn test_rock_removal() {
+        let (mut world, mut actions, player) = setup_world();
+        actions.initialize_garden();
+
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        g.has_rock = true;
+        set!(world, (g));
+        actions.remove_rock(1);
+
+        set_block_timestamp(get_block_timestamp() + 4);
+        actions.refresh_plots(array![1_u16]);
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        assert(g.has_rock == true, 'rock should be pending');
+
+        set_block_timestamp(get_block_timestamp() + 2);
+        actions.refresh_plots(array![1_u16]);
+        let mut g: GardenCell = actions.get_garden_cell(player, 1);
+        assert(g.has_rock == false, 'rock should be removed');
+    }
+// #[test]
+// #[available_gas(30000000000)]
+// fn test
 // 
 }
 

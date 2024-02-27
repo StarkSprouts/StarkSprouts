@@ -142,14 +142,20 @@ mod actions {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
-            /// If there is a pending rock try to remove it
             let cell_index = player_stats.rock_pending_cell_index;
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-            player_stats.finish_rock_removal();
-            garden_cell.set_has_rock(false);
+            /// If there is a pending rock try to remove it
+            if player_stats.rock_pending {
+                let time_since_rock_removal_started = starknet::get_block_timestamp()
+                    - player_stats.rock_removal_started_date;
+                if time_since_rock_removal_started >= TIME_TO_REMOVE_ROCK {
+                    player_stats.finish_rock_removal();
+                    garden_cell.set_has_rock(false);
 
-            set!(world, (garden_cell,));
-            set!(world, (player_stats,));
+                    set!(world, (garden_cell,));
+                    set!(world, (player_stats,));
+                }
+            }
         }
 
         /// Get the seed dispatcher for the given seed id
