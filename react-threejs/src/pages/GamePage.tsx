@@ -33,7 +33,7 @@ export default function GamePage() {
 
   return (
     <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
-      <div className="absolute z-10 top-10 bg-slate-500">
+      <div className="absolute z-10 top-5 left-2 flex flex-col space-y-2">
         <StyledButton label="Init Garden" onPress={handleInitGarden} />
         <StyledButton label="Refresh Garden" onPress={handleRefreshGarden} />
       </div>
