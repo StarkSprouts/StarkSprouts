@@ -15,7 +15,7 @@ use stark_sprouts::{
 trait IActions<TContractState> {
     /// Reads ///
 
-    /// Get the token lookups for the given seed id
+    /// Get the token lookups for the seed contracts
     fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
     /// Get the player's stats 
     fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
