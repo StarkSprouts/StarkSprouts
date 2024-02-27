@@ -194,10 +194,6 @@ mod tests {
 
         let p = actions.get_plant(player, 1);
 
-        // p.last_harvest_date.print();
-        // get_block_timestamp().print();
-        // p.growth_stage.print();
-
         assert(!p.is_harvestable, 'adult but not harvestable');
         assert(p.last_harvest_date == get_block_timestamp(), 'wrong last harvest date1');
 
@@ -231,7 +227,6 @@ mod tests {
         set_block_timestamp(now() + 2 * grow_time);
         actions.refresh_plot(1);
         let p = actions.get_plant(player, 1);
-        // p.growth_stage.print();
         assert(p.growth_stage == 2, 'wrong growth stage');
         /// Die 
         set_block_timestamp(now() + max_water_level.into() + 10);
