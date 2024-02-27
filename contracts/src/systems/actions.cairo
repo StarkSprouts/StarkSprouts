@@ -1,8 +1,45 @@
+// pre e2e tests and frontend helpers
+// #[starknet::interface]
+// trait IActions<TContractState> {
+//     /// Set seed token address lookups
+//     fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
+//     /// Initialize a garden for the player
+//     fn initialize_garden(self: @TContractState);
+//     /// Remove a rock from the garden
+//     fn remove_rock(self: @TContractState, cell_index: u16);
+//     /// Plants the seed type at the given garden index
+//     fn plant_seed(self: @TContractState, seed_id: u256, cell_index: u16);
+//     /// Top off the water level for a plant
+//     fn water_plant(self: @TContractState, cell_index: u16);
+//     /// Harvest the plant at the given garden index
+//     fn harvest_plant(self: @TContractState, cell_index: u16);
+//     /// Remove a dead plant from the garden 
+//     fn remove_dead_plant(self: @TContractState, cell_index: u16);
+//     /// Refresh the state of the garden for specific cells
+//     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
+//     /// Refresh a player's garden state
+//     fn refresh_garden(self: @TContractState);
+// }
+
+use starknet::{ContractAddress};
+use stark_sprouts::{
+    models::{
+        garden_cell::{GardenCell, GardenCellImpl, PlotStatus},
+        plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},
+        player_stats::{PlayerStats, PlayerStatsImpl},
+        seed_interface::{ISeedDispatcher, ISeedDispatcherTrait},
+        token_lookups::{TokenLookups, TokenLookupsImpl, TokenLookupsTrait},
+        world_init::{WorldInit, WorldInitImpl, WorldInitTrait},
+    },
+};
+
+
 #[starknet::interface]
 trait IActions<TContractState> {
     /// Set seed token address lookups
     fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
     /// Initialize a garden for the player
+    /// Return the cells rocks are in
     fn initialize_garden(self: @TContractState);
     /// Remove a rock from the garden
     fn remove_rock(self: @TContractState, cell_index: u16);
@@ -18,6 +55,21 @@ trait IActions<TContractState> {
     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
     fn refresh_garden(self: @TContractState);
+
+
+    /// Get the player's stats 
+    fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
+    /// Get a garden cell 
+    fn get_garden_cell(
+        self: @TContractState, player: ContractAddress, cell_index: u16
+    ) -> GardenCell;
+    /// Get an array of garden cells
+    fn get_garden_cells(
+        self: @TContractState, player: ContractAddress, cell_indexes: Array<u16>
+    ) -> Array<GardenCell>;
+// get garden cells, 
+
+// get ...
 }
 
 #[dojo::contract]
@@ -50,6 +102,7 @@ mod actions {
     const NUMBER_OF_PLANT_ASSETS: u8 = 13;
     const TIME_TO_REMOVE_ROCK: u64 = 15; // seconds
     const TIME_FOR_PLANT_TO_HARVEST: u64 = 120; // seconds
+
 
     /// Internal ///
     #[generate_trait]
@@ -140,12 +193,43 @@ mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
+        /// Reads /// 
+        fn get_player_stats(self: @ContractState, player: ContractAddress) -> PlayerStats {
+            let world = self.world_dispatcher.read();
+            get!(world, (player), (PlayerStats,))
+        }
+
+        fn get_garden_cell(
+            self: @ContractState, player: ContractAddress, cell_index: u16
+        ) -> GardenCell {
+            let world = self.world_dispatcher.read();
+            get!(world, (player, cell_index), (GardenCell,))
+        }
+
+        fn get_garden_cells(
+            self: @ContractState, player: ContractAddress, mut cell_indexes: Array<u16>
+        ) -> Array<GardenCell> {
+            let world = self.world_dispatcher.read();
+            let mut garden_cells: Array<GardenCell> = array![];
+            loop {
+                match cell_indexes.pop_front() {
+                    Option::Some(cell_index) => {
+                        let garden_cell: GardenCell = get!(
+                            world, (player, cell_index), (GardenCell,)
+                        );
+                        garden_cells.append(garden_cell);
+                    },
+                    Option::None => { break; }
+                }
+            };
+            garden_cells
+        }
+
+
         /// Set token lookups
         fn set_token_lookups(
             self: @ContractState, mut seed_addresses: Array<starknet::ContractAddress>
         ) {
-            /// Verify caller is admin
-            /// @dev todo: setup admin role/const
             /// Check all seed addresses are passed in
             assert(seed_addresses.len() == NUMBER_OF_PLANT_ASSETS.into(), 'Array invalid');
 
@@ -177,17 +261,7 @@ mod actions {
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
             player_stats.set_has_garden(true);
             set!(world, (player_stats,));
-            /// Create some salt for randomness
-            let mut salt: felt252 = player.into()
-                + get_block_timestamp().into()
-                + get_block_number().into();
-            let mut random_seed: felt252 = poseidon_hash_span((array![salt]).span());
-            /// Convert the random seed to a number of rocks to spawn, [0, MAX_ROCKS_AT_SPAWN]
-            let mut random_int: u256 = random_seed.into();
-            random_int = random_int % (MAX_ROCKS_AT_SPAWN + 1).into();
-            let number_of_rocks = random_int;
-            /// Initializes all cells into storage
-            /// @dev Might be more effecient way to do this and avoid rock loop but this should work for now
+            /// Initializes all cells into torii
             let mut i = 0;
             loop {
                 if i == DIM * DIM {
@@ -198,6 +272,17 @@ mod actions {
                 set!(world, (garden_cell,));
                 i += 1;
             };
+
+            /// Create some salt for randomness
+            let mut salt: felt252 = player.into()
+                + get_block_timestamp().into()
+                + get_block_number().into();
+            let mut random_seed: felt252 = poseidon_hash_span((array![salt]).span());
+            /// Convert the random seed to a number of rocks to spawn, [0, MAX_ROCKS_AT_SPAWN]
+            let mut random_int: u256 = random_seed.into();
+            random_int = random_int % (MAX_ROCKS_AT_SPAWN + 1).into();
+            let number_of_rocks = random_int;
+
             /// Place the rocks in the garden
             let mut i = 0;
             loop {
@@ -233,7 +318,7 @@ mod actions {
                 random_int = random_seed.into();
                 let token_id: u256 = ((random_int % NUMBER_OF_PLANT_ASSETS.into()) + 1);
                 /// Mint the seed
-                // self.mint_seed(token_id); // todo add back
+                self.mint_seed(token_id); // todo add back
                 i += 1;
             }
         }
