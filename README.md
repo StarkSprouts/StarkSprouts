@@ -1,5 +1,10 @@
 # StarkSprouts
 
+StarkSprouts is an on-chain gardening simulator. The ultimate goal is to maximize garden yield while preventing plant death and ensuring timely harvesting.
+
+Created at Starknet Hacker House Denver 2024
+
+
 ## Local Dojo Deployment 
 
 1. ``` cd contracts ```
