@@ -1,4 +1,4 @@
-import manifest from "../contracts/target/dev/manifest.json";
+import manifest from "./manifest.json";
 import { createDojoConfig } from "@dojoengine/core";
 
 const toriiUrl = import.meta.env.VITE_TORII_URL;
