@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 #[derive(Model, Copy, Drop, Serde)]
 struct TokenLookups {
     #[key]
-    seed_id: u256,
+    seed_id: u16,
     erc20_address: ContractAddress,
 }
 
@@ -26,7 +26,7 @@ mod tests {
     #[available_gas(1000000)]
     fn test_set_erc20_address() {
         let mut token_lookups = TokenLookups {
-            seed_id: 1_u256, erc20_address: starknet::contract_address_const::<'token'>(),
+            seed_id: 1_u16, erc20_address: starknet::contract_address_const::<'token'>(),
         };
         token_lookups.set_erc20_address(starknet::contract_address_const::<'new_token'>());
         assert(

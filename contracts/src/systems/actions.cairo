@@ -1,26 +1,3 @@
-// pre e2e tests and frontend helpers
-// #[starknet::interface]
-// trait IActions<TContractState> {
-//     /// Set seed token address lookups
-//     fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
-//     /// Initialize a garden for the player
-//     fn initialize_garden(self: @TContractState);
-//     /// Remove a rock from the garden
-//     fn remove_rock(self: @TContractState, cell_index: u16);
-//     /// Plants the seed type at the given garden index
-//     fn plant_seed(self: @TContractState, seed_id: u256, cell_index: u16);
-//     /// Top off the water level for a plant
-//     fn water_plant(self: @TContractState, cell_index: u16);
-//     /// Harvest the plant at the given garden index
-//     fn harvest_plant(self: @TContractState, cell_index: u16);
-//     /// Remove a dead plant from the garden 
-//     fn remove_dead_plant(self: @TContractState, cell_index: u16);
-//     /// Refresh the state of the garden for specific cells
-//     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
-//     /// Refresh a player's garden state
-//     fn refresh_garden(self: @TContractState);
-// }
-
 use starknet::{ContractAddress};
 use stark_sprouts::{
     models::{
@@ -37,28 +14,30 @@ use stark_sprouts::{
 #[starknet::interface]
 trait IActions<TContractState> {
     /// Set seed token address lookups
-    fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
+    fn set_token_lookups(
+        ref self: TContractState, seed_addresses: Array<starknet::ContractAddress>
+    );
     /// Initialize a garden for the player with random rocks and mint the player some seeds
-    fn initialize_garden(self: @TContractState);
+    fn initialize_garden(ref self: TContractState);
     /// Remove a rock from the garden
-    fn remove_rock(self: @TContractState, cell_index: u16);
+    fn remove_rock(ref self: TContractState, cell_index: u16);
     /// Plants the seed type at the given garden index
-    fn plant_seed(self: @TContractState, seed_id: u256, cell_index: u16);
+    fn plant_seed(ref self: TContractState, seed_id: u256, cell_index: u16);
     /// Top off the water level for a plant
-    fn water_plant(self: @TContractState, cell_index: u16);
+    fn water_plant(ref self: TContractState, cell_index: u16);
     /// Harvest the plant at the given garden index
-    fn harvest_plant(self: @TContractState, cell_index: u16);
+    fn harvest_plant(ref self: TContractState, cell_index: u16);
     /// Remove a dead plant from the garden 
-    fn remove_dead_plant(self: @TContractState, cell_index: u16);
+    fn remove_dead_plant(ref self: TContractState, cell_index: u16);
     /// Refresh a specifc plot 
-    fn refresh_plot(self: @TContractState, cell_index: u16);
+    fn refresh_plot(ref self: TContractState, cell_index: u16);
     /// Refresh the state of the garden for specific cells
-    fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
+    fn refresh_plots(ref self: TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
-    fn refresh_garden(self: @TContractState);
+    fn refresh_garden(ref self: TContractState);
 
     /// Get the token lookups for the given seed id
-    // fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
+    fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
 
     /// Get the player's stats 
     fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
@@ -140,7 +119,7 @@ mod actions {
 
         /// Refresh a plot by lowering the plant's water level, updating 
         /// its growth stage (if necessary), and marking the plant harvested (if necessary)
-        fn _refresh_plot(self: @ContractState, cell_index: u16) {
+        fn _refresh_plot(ref self: ContractState, cell_index: u16) {
             self.assert_cell_index_in_bounds(cell_index);
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -159,7 +138,7 @@ mod actions {
         }
 
         /// Finalize rock removal 
-        fn finish_rock_removal_if_ready(self: @ContractState, cell_index: u16,) {
+        fn finish_rock_removal_if_ready(ref self: ContractState, cell_index: u16,) {
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
@@ -183,12 +162,12 @@ mod actions {
         }
 
         /// Mint the player a seed token
-        fn mint_seed(self: @ContractState, seed_id: u256) {
+        fn mint_seed(ref self: ContractState, seed_id: u256) {
             self.get_seed_dispatcher(seed_id).mint_seeds(get_caller_address(), 1);
         }
 
         /// Burn a player's seed token
-        fn burn_seed(self: @ContractState, seed_id: u256) {
+        fn burn_seed(ref self: ContractState, seed_id: u256) {
             self.get_seed_dispatcher(seed_id).burn_seeds(get_caller_address(), 1);
         }
     }
@@ -196,6 +175,21 @@ mod actions {
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
         /// Reads /// 
+        fn get_token_lookups(self: @ContractState) -> Array<ContractAddress> {
+            let world = self.world_dispatcher.read();
+            let mut token_lookups: Array<ContractAddress> = array![];
+            let mut i = 1_u256;
+            loop {
+                let mut token_lookup: TokenLookups = get!(world, (i), (TokenLookups,));
+                token_lookups.append(token_lookup.erc20_address);
+                i += 1;
+                if token_lookups.len() == 13 {
+                    break;
+                }
+            };
+            token_lookups
+        }
+
         fn get_player_stats(self: @ContractState, player: ContractAddress) -> PlayerStats {
             let world = self.world_dispatcher.read();
             get!(world, (player), (PlayerStats,))
@@ -230,23 +224,25 @@ mod actions {
 
         /// Set token lookups
         fn set_token_lookups(
-            self: @ContractState, mut seed_addresses: Array<starknet::ContractAddress>
+            ref self: ContractState, mut seed_addresses: Array<starknet::ContractAddress>
         ) {
             /// Check all seed addresses are passed in
             assert(seed_addresses.len() == NUMBER_OF_PLANT_ASSETS.into(), 'Array invalid');
 
-            let world = self.world_dispatcher.read();
             /// Set the world as initialzed 
             /// @dev Reverts if the world has already been initialized
+            let world = self.world_dispatcher.read();
             let mut world_init: WorldInit = get!(world, (0), (WorldInit,));
             world_init.init_world();
 
             /// Set the token lookups for each seed
-            let mut i = 1_u256;
+            let mut i = 1_u16;
             loop {
                 match seed_addresses.pop_front() {
                     Option::Some(seed_address) => {
                         let mut token_lookup: TokenLookups = get!(world, (i), (TokenLookups,));
+                        token_lookup.set_erc20_address(seed_address);
+                        set!(world, (token_lookup,));
                         i += 1;
                     },
                     Option::None => { break; }
@@ -255,7 +251,7 @@ mod actions {
         }
 
         /// Initializes a player's garden
-        fn initialize_garden(self: @ContractState) {
+        fn initialize_garden(ref self: ContractState) {
             self.assert_player_does_not_have_garden();
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -318,13 +314,13 @@ mod actions {
                 random_int = random_seed.into();
                 let token_id: u256 = ((random_int % NUMBER_OF_PLANT_ASSETS.into()) + 1);
                 /// Mint the seed
-                self.mint_seed(token_id); // todo add back
+                // self.mint_seed(token_id); // todo add back
                 i += 1;
             }
         }
 
         /// Refresh a specifc plot
-        fn refresh_plot(self: @ContractState, cell_index: u16) {
+        fn refresh_plot(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
             let world = self.world_dispatcher.read();
@@ -334,7 +330,7 @@ mod actions {
         }
 
         /// Refresh the state of the garden for specific cells
-        fn refresh_plots(self: @ContractState, mut cell_indexes: Array<u16>) {
+        fn refresh_plots(ref self: ContractState, mut cell_indexes: Array<u16>) {
             self.assert_player_has_garden();
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -356,7 +352,7 @@ mod actions {
         }
 
         /// Refresh a player's entire garden's state
-        fn refresh_garden(self: @ContractState) {
+        fn refresh_garden(ref self: ContractState) {
             self.assert_player_has_garden();
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -378,7 +374,7 @@ mod actions {
         }
 
         /// Water a plant at the given garden index
-        fn water_plant(self: @ContractState, cell_index: u16) {
+        fn water_plant(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
             self._refresh_plot(cell_index);
@@ -400,7 +396,7 @@ mod actions {
         }
 
         /// Start rock removal at the given garden index
-        fn remove_rock(self: @ContractState, cell_index: u16) {
+        fn remove_rock(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
 
@@ -417,7 +413,7 @@ mod actions {
         }
 
         /// Remove a dead plant from the garden at the given garden index
-        fn remove_dead_plant(self: @ContractState, cell_index: u16) {
+        fn remove_dead_plant(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
 
@@ -434,7 +430,7 @@ mod actions {
         }
 
         /// Plants the seed type at the given garden index
-        fn plant_seed(self: @ContractState, seed_id: u256, cell_index: u16) {
+        fn plant_seed(ref self: ContractState, seed_id: u256, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
 
@@ -444,16 +440,19 @@ mod actions {
             self.assert_plot_is_empty(ref garden_cell);
 
             /// Burn the seed token
-            self.burn_seed(seed_id);
+            // self.burn_seed(seed_id);
             /// Plant the seed
             garden_cell.plant_seed(seed_id, cell_index);
 
-            set!(world, (garden_cell,));
+            set!(world, (garden_cell));
+
+            let x: felt252 = world.contract_address.into();
+            x.print();
         // emit!(world, DeadPlantRemoved { player, garden_cell });
         }
 
         /// Harvest the plant at the given garden index
-        fn harvest_plant(self: @ContractState, cell_index: u16) {
+        fn harvest_plant(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
             self._refresh_plot(cell_index);
@@ -464,7 +463,7 @@ mod actions {
             let seed_id: felt252 = garden_cell.plant.plant_type.into();
 
             garden_cell.plant.harvest();
-            self.mint_seed(seed_id.into());
+            // self.mint_seed(seed_id.into());
 
             set!(world, (garden_cell,));
         }

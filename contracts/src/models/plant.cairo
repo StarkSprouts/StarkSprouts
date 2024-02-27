@@ -38,7 +38,7 @@ trait PlantTrait {
     /// Grows the plant if it's time
     fn update_growth(ref self: Plant);
     /// Returns the max growth level for the plant type
-    fn get_max_growth_level(ref self: Plant) -> u8;
+    fn get_max_growth_level(self: @Plant) -> u8;
     /// Harvest the plant if it's ready
     fn harvest(ref self: Plant);
 }
@@ -60,7 +60,7 @@ impl PlantImpl of PlantTrait {
     }
 
     /// Returns the max growth level for the plant type
-    fn get_max_growth_level(ref self: Plant) -> u8 {
+    fn get_max_growth_level(self: @Plant) -> u8 {
         match self.plant_type {
             PlantType::None => 0,
             PlantType::Bell => 24,

@@ -55,7 +55,7 @@ impl GardenCellImpl of GradenCellTrait {
                     growth_stage: 0,
                     water_level: 100,
                     planted_date: get_block_timestamp(),
-                    last_water_date: get_block_timestamp(),
+                    last_water_date: starknet::get_block_timestamp(),
                     last_harvest_date: 0,
                     is_harvestable: false,
                 };
