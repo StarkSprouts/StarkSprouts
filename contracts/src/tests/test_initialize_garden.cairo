@@ -256,8 +256,6 @@ mod tests {
         let harvest_time = 5;
         let max_water_level: u8 = 100;
 
-        // let now: u8 = get_block_timestamp().try_into().unwrap();
-
         set_block_timestamp(get_block_timestamp() + 2 * grow_time);
         actions.refresh_plot(1);
 
@@ -266,9 +264,6 @@ mod tests {
             g.plant.water_level == max_water_level - (2 * grow_time).try_into().unwrap(),
             'wrong water level'
         );
-
-        // g.plant.water_level = max_water_level - (2 * grow_time);
-        // g.plant.growth_stage = ;
 
         loop {
             set_block_timestamp(get_block_timestamp() + 6);
