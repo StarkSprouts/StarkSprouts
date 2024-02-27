@@ -14,11 +14,14 @@ export const GardenCells = () => {
     account: { account },
     setup: {
       clientComponents: { GardenCell },
+      systemCalls: { refreshGarden },
     },
   } = useDojo();
 
   useEffect(() => {
-    const getAllGardenCells = () => {
+    const getAllGardenCells = async () => {
+      // refresh the garden cells before rendering them
+
       let cells: GardenCellType[] = [];
       for (let i = 0; i <= 224; i++) {
         const entityId = getEntityIdFromKeys([
@@ -28,6 +31,7 @@ export const GardenCells = () => {
 
         const cell = getComponentValue(GardenCell, entityId);
 
+        // @ts-ignore
         cells.push(cell);
       }
 
@@ -35,6 +39,12 @@ export const GardenCells = () => {
     };
 
     getAllGardenCells();
+
+    // refetch all the garden cells periodically
+    const interval = setInterval(() => {
+      getAllGardenCells();
+    }, 3000);
+    return () => clearInterval(interval);
   }, [account]);
 
   if (gardenCells.length === 0) {

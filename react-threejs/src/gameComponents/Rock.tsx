@@ -1,6 +1,7 @@
 import { useDojo } from "@/dojo/useDojo";
 import { useAssets } from "./AssetLoader";
 import { useState } from "react";
+import type { AssetsType } from "./Tile";
 
 export type RockProps = {
   position: [number, number];
@@ -19,18 +20,14 @@ export const Rock = ({ position, cellIndex }: RockProps) => {
   const { rock } = useAssets() as AssetsType;
 
   const handleRockClicked = async () => {
-    console.log("Rock clicked!");
     const txHash = await removeRock(account, cellIndex);
-    console.log("Rock removed txHash: ", txHash);
   };
 
   const handleRockHover = () => {
-    console.log("Rock hovered!");
     setIsHovered(true);
   };
 
   const handleRockUnhover = () => {
-    console.log("Rock unhovered!");
     setIsHovered(false);
   };
 
