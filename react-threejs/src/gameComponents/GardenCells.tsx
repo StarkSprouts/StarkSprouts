@@ -42,6 +42,7 @@ export const GardenCells = () => {
     getAllGardenCells();
 
     // refetch all the garden cells periodically
+    // NOTE: this is not a good way to do this, but it's fine for now
     const interval = setInterval(() => {
       getAllGardenCells();
     }, 3000);

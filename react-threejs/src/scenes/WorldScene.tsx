@@ -43,12 +43,8 @@ export const WorldScene = () => {
   const renderTileMap = () => {
     const rows = tileMap.trim().split("\n").reverse();
 
-    console.log(rows);
     const mapWidth = rows[0].length;
-    console.log;
     const mapHeight = rows.length;
-    const xOffset = -mapWidth / 2;
-    const yOffset = -mapHeight / 2;
 
     /*
     console.log(`MAP WIDTH: ${mapWidth}`);
