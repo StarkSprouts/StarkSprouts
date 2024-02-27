@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use starknet::class_hash::Felt252TryIntoClassHash;
+    use starknet::{class_hash::Felt252TryIntoClassHash, ContractAddress};
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use dojo::test_utils::{spawn_test_world, deploy_contract};
     use stark_sprouts::{
@@ -14,7 +14,8 @@ mod tests {
     };
     use debug::PrintTrait;
 
-    fn setup_world() -> IActionsDispatcher {
+
+    fn setup_world() -> (IWorldDispatcher, IActionsDispatcher, ContractAddress) {
         let mut models = array![
             garden_cell::TEST_CLASS_HASH,
             player_stats::TEST_CLASS_HASH,
@@ -24,66 +25,68 @@ mod tests {
         let world = spawn_test_world(models);
         let contract_address = world
             .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap());
-        IActionsDispatcher { contract_address }
-    }
-
-    // #[test]
-    // #[available_gas(1000000)]
-    // fn test_set_token_lookups() {
-    //     let player = starknet::contract_address_const::<0x0>();
-    //     let actions = setup_world();
-
-    //     actions.set_token_lookups();
-    // }
-
-    // #[test]
-    // #[available_gas(3000000000)]
-    // fn test_initialize_garden() {
-    //     let player = starknet::contract_address_const::<0x0>();
-    //     let actions = setup_world();
-
-    //     actions.initialize_garden();
-    // }
-
-    /// do easy ones later above
-
-    #[test]
-    #[available_gas(3000000000)]
-    fn test_remove_rock() {
-        let player = starknet::contract_address_const::<0x0>();
-        let actions = setup_world();
-
-        actions.initialize_garden();
-        actions.remove_rock(1);
+        (
+            world,
+            IActionsDispatcher { contract_address },
+            starknet::contract_address_const::<'player'>()
+        )
     }
 
 
     #[test]
-    #[available_gas(3000000000)]
-    fn test_plant_type_default() {
-        // caller
-        let player = starknet::contract_address_const::<0x0>();
-
-        // models
-        let mut models = array![garden_cell::TEST_CLASS_HASH];
-
-        // deploy world with models
-        let world = spawn_test_world(models);
-
-        // deploy systems contract
-        let contract_address = world
-            .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap());
-        let actions_system = IActionsDispatcher { contract_address };
-
-        // call initialize_garden
-        let mut gs = get!(world, (player, 2), (GardenCell,));
-
-        actions_system.initialize_garden();
-        actions_system.plant_seed(1, 2);
-
-        let mut gs = get!(world, (player, 2), (GardenCell,));
-        let b: bool = gs.plant.plant_type == PlantType::Bell;
-        b.print();
+    #[available_gas(10000000)]
+    fn test_set_token_lookups() {
+        let (world, actions, player) = setup_world();
+        let lookups: Array<ContractAddress> = array![starknet::contract_address_const::<1>(),];
+    // actions.set_token_lookups();
     }
+// #[test]
+// #[available_gas(3000000000)]
+// fn test_initialize_garden() {
+//     let player = starknet::contract_address_const::<0x0>();
+//     let actions = setup_world();
+
+//     actions.initialize_garden();
+// }
+
+/// do easy ones later above
+
+// #[test]
+// #[available_gas(3000000000)]
+// fn test_remove_rock() {
+//     let player = starknet::contract_address_const::<0x0>();
+//     let actions = setup_world();
+
+//     actions.initialize_garden();
+//     actions.remove_rock(1);
+// }
+
+// #[test]
+// #[available_gas(3000000000)]
+// fn test_plant_type_default() {
+//     // caller
+//     let player = starknet::contract_address_const::<0x0>();
+
+//     // models
+//     let mut models = array![garden_cell::TEST_CLASS_HASH];
+
+//     // deploy world with models
+//     let world = spawn_test_world(models);
+
+//     // deploy systems contract
+//     let contract_address = world
+//         .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap());
+//     let actions_system = IActionsDispatcher { contract_address };
+
+//     // call initialize_garden
+//     let mut gs = get!(world, (player, 2), (GardenCell,));
+
+//     actions_system.initialize_garden();
+//     actions_system.plant_seed(1, 2);
+
+//     let mut gs = get!(world, (player, 2), (GardenCell,));
+//     let b: bool = gs.plant.plant_type == PlantType::Bell;
+//     b.print();
+// }
 }
 

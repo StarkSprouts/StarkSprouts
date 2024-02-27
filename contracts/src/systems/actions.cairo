@@ -38,8 +38,7 @@ use stark_sprouts::{
 trait IActions<TContractState> {
     /// Set seed token address lookups
     fn set_token_lookups(self: @TContractState, seed_addresses: Array<starknet::ContractAddress>);
-    /// Initialize a garden for the player
-    /// Return the cells rocks are in
+    /// Initialize a garden for the player with random rocks and mint the player some seeds
     fn initialize_garden(self: @TContractState);
     /// Remove a rock from the garden
     fn remove_rock(self: @TContractState, cell_index: u16);
@@ -275,7 +274,6 @@ mod actions {
                 set!(world, (garden_cell,));
                 i += 1;
             };
-
             /// Create some salt for randomness
             let mut salt: felt252 = player.into()
                 + get_block_timestamp().into()
@@ -285,7 +283,6 @@ mod actions {
             let mut random_int: u256 = random_seed.into();
             random_int = random_int % (MAX_ROCKS_AT_SPAWN + 1).into();
             let number_of_rocks = random_int;
-
             /// Place the rocks in the garden
             let mut i = 0;
             loop {
