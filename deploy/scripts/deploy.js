@@ -146,11 +146,7 @@ const deployWorld = async () => {
 // };
 
 /// Set token lookups
-const setTokenLookups = async (
-  worldAddress,
-  actionsAddress,
-  seed_addresses
-) => {
+const setTokenLookups = async (actionsAddress, seed_addresses) => {
   /// run sozo execute
   const command = `sozo ${profile}execute ${actionsAddress} set_token_lookups --calldata ${seed_addresses.length},${seed_addresses} --rpc-url ${NODE_URL} --account-address ${account.address} --private-key ${PRIVATE_KEY} --wait`;
 
@@ -245,30 +241,31 @@ const _buildAndMigrateToSozo = async () => {
 const main = async () => {
   try {
     // await deploySeeds();
-
-    // let { worldAddress, actionsAddress } = await deployWorld();
+    let { worldAddress, actionsAddress } = await deployWorld();
+    let addresses = await deploySeeds(worldAddress);
+    await setTokenLookups(actionsAddress, addresses);
     /// need to wait for txn to mint for this txn
-    const { worldAddress, actionsAddress } = {
-      worldAddress:
-        "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
-      actionsAddress:
-        "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
-    };
-    await setTokenLookups(worldAddress, actionsAddress, [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12",
-      "13",
-    ]);
+    // const { worldAddress, actionsAddress } = {
+    //   worldAddress:
+    //     "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
+    //   actionsAddress:
+    //     "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
+    // };
+    // await setTokenLookups(worldAddress, actionsAddress, [
+    //   "1",
+    //   "2",
+    //   "3",
+    //   "4",
+    //   "5",
+    //   "6",
+    //   "7",
+    //   "8",
+    //   "9",
+    //   "10",
+    //   "11",
+    //   "12",
+    //   "13",
+    // ]);
   } catch (error) {
     console.error(`Operation failed! Reason: ${error.message}`);
   }
