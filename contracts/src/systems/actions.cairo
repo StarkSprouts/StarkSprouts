@@ -51,6 +51,9 @@ trait IActions<TContractState> {
     fn harvest_plant(self: @TContractState, cell_index: u16);
     /// Remove a dead plant from the garden 
     fn remove_dead_plant(self: @TContractState, cell_index: u16);
+
+    /// Refresh a specifc plot 
+    fn refresh_plot(self: @TContractState, cell_index: u16);
     /// Refresh the state of the garden for specific cells
     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
@@ -137,7 +140,7 @@ mod actions {
 
         /// Refresh a plot by lowering the plant's water level, updating 
         /// its growth stage (if necessary), and marking the plant harvested (if necessary)
-        fn refresh_plot(self: @ContractState, cell_index: u16) {
+        fn _refresh_plot(self: @ContractState, cell_index: u16) {
             self.assert_cell_index_in_bounds(cell_index);
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -323,6 +326,16 @@ mod actions {
             }
         }
 
+        /// Refresh a specifc plot
+        fn refresh_plot(self: @ContractState, cell_index: u16) {
+            self.assert_player_has_garden();
+            self.assert_cell_index_in_bounds(cell_index);
+            let world = self.world_dispatcher.read();
+            let player = get_caller_address();
+            let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+            self._refresh_plot(cell_index);
+        }
+
         /// Refresh the state of the garden for specific cells
         fn refresh_plots(self: @ContractState, mut cell_indexes: Array<u16>) {
             self.assert_player_has_garden();
@@ -336,7 +349,7 @@ mod actions {
                         let mut garden_cell: GardenCell = get!(
                             world, (player, cell_index), (GardenCell,)
                         );
-                        self.refresh_plot(cell_index);
+                        self._refresh_plot(cell_index);
                     },
                     Option::None => { break; }
                 }
@@ -359,7 +372,7 @@ mod actions {
                 let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
                 /// If the cell has a plant, updates its water level and growth
                 if garden_cell.plot_status() == PlotStatus::AlivePlant {
-                    self.refresh_plot(cell_index);
+                    self._refresh_plot(cell_index);
                 }
                 cell_index += 1;
             };
@@ -371,7 +384,7 @@ mod actions {
         fn water_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
-            self.refresh_plot(cell_index);
+            self._refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
@@ -446,7 +459,7 @@ mod actions {
         fn harvest_plant(self: @ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
-            self.refresh_plot(cell_index);
+            self._refresh_plot(cell_index);
 
             let world = self.world_dispatcher.read();
             let player = get_caller_address();

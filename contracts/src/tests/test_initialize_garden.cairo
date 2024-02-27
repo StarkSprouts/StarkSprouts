@@ -49,14 +49,13 @@ mod tests {
 
     #[test]
     #[available_gas(3000000000)]
-    fn test_remove_rock(){
+    fn test_remove_rock() {
         let player = starknet::contract_address_const::<0x0>();
         let actions = setup_world();
 
         actions.initialize_garden();
-        actions.remove_rock(1, 2);
+        actions.remove_rock(1);
     }
-
 
 
     #[test]
@@ -87,5 +86,4 @@ mod tests {
         b.print();
     }
 }
-
 
