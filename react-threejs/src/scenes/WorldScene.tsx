@@ -50,10 +50,12 @@ export const WorldScene = () => {
     const xOffset = -mapWidth / 2;
     const yOffset = -mapHeight / 2;
 
+    /*
     console.log(`MAP WIDTH: ${mapWidth}`);
     console.log(`MAP HEIGHT: ${mapHeight}`);
     console.log(`X OFFSET: ${xOffset}`);
     console.log(`Y OFFSET: ${yOffset}`);
+    */
 
     return rows.map((row, y) => {
       return row.split("").map((type, x) => {

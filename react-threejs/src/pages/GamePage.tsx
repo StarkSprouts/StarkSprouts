@@ -24,9 +24,9 @@ export default function GamePage() {
 
   const localGardenCell = useComponentValue(
     GardenCell,
-    getEntityIdFromKeys([BigInt(account.address)])
+    getEntityIdFromKeys([BigInt(account.address), BigInt(224)])
   );
-  console.log("Local garden cell: ", JSON.stringify(localGardenCell));
+  console.log("Local garden cell: ", localGardenCell);
 
   const handleInitGarden = () => {
     console.log("init world");
@@ -42,9 +42,9 @@ export default function GamePage() {
     await refreshGarden(account);
     const cells = getComponentValue(
       GardenCell,
-      getEntityIdFromKeys([BigInt(account.address)])
+      getEntityIdFromKeys([BigInt(account.address), BigInt(129)])
     );
-    console.log("Garden cells: ", JSON.stringify(cells, null, 2));
+    //console.log("Garden cells: ", JSON.stringify(cells, null, 2));
     if (cells) {
       setGardenCells(cells);
     }
@@ -58,7 +58,7 @@ export default function GamePage() {
       </div>
       <Game canvasWidth={width} canvasHeight={height}>
         <WorldScene />
-        <GardenCells gardenCells={gardenCells} />
+        <GardenCells gardenCells={localGardenCell} />
       </Game>
     </div>
   );

@@ -13,7 +13,7 @@ export const GardenCells = (gardenCells: GardenCellType[]) => {
   //console.log("Gaden cells: ", JSON.stringify(gardenCells, null, 2));
   //const setGardenCells = useGardenStore((state) => state.setGardenCells);
 
-  console.log("Garden cells component: ", JSON.stringify(gardenCells, null, 2));
+  //console.log("Garden cells component: ", JSON.stringify(gardenCells, null, 2));
 
   /*
   useEffect(() => {
@@ -43,6 +43,7 @@ export const GardenCells = (gardenCells: GardenCellType[]) => {
   }, []);
   */
 
+  if (!gardenCells.gardenCells) return null;
   return (
     <>
       {

@@ -59,7 +59,7 @@ export function createSystemCalls(
     const entityId = getEntityIdFromKeys([BigInt(account.address)]);
 
     const componentValue = getComponentValue(GardenCell, entityId);
-    console.log("Component value: ", JSON.stringify(componentValue));
+    console.log("Component value: ", componentValue);
 
     const gardenId = uuid();
     GardenCell.addOverride(gardenId, {
