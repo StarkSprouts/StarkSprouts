@@ -1,14 +1,55 @@
+import { useDojo } from "@/dojo/useDojo";
 import { useAssets } from "./AssetLoader";
-
+import { useState } from "react";
 import type { AssetsType } from "./Tile";
 
-export const Rock = () => {
+export type RockProps = {
+  position: [number, number];
+  cellIndex: number;
+};
+
+export const Rock = ({ position, cellIndex }: RockProps) => {
+  const {
+    account: { account },
+    setup: {
+      systemCalls: { removeRock },
+    },
+  } = useDojo();
+  const [isHovered, setIsHovered] = useState(false);
+
   const { rock } = useAssets() as AssetsType;
 
+  const handleRockClicked = async () => {
+    const txHash = await removeRock(account, cellIndex);
+  };
+
+  const handleRockHover = () => {
+    setIsHovered(true);
+  };
+
+  const handleRockUnhover = () => {
+    setIsHovered(false);
+  };
+
   return (
-    <mesh position={[0, 0, 0]}>
-      <planeBufferGeometry args={[1, 1]} />
-      <meshBasicMaterial attach="material" map={rock} />
+    <mesh
+      position={[position[0], position[1], 0]}
+      onClick={handleRockClicked}
+      onPointerOver={() => handleRockHover()}
+      onPointerOut={() => handleRockUnhover()}
+    >
+      <planeGeometry args={[1, 1]} />
+      {isHovered && (
+        <meshBasicMaterial
+          attach="material"
+          map={rock}
+          transparent
+          opacity={0.5}
+        />
+      )}
+      {!isHovered && (
+        <meshBasicMaterial attach="material" map={rock} transparent />
+      )}
     </mesh>
   );
 };

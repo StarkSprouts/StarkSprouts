@@ -98,13 +98,9 @@ export const Tile = ({ type, position }: TileProps) => {
       break;
   }
 
-  const handleClick = () => {
-    console.log("Tile clicked");
-    setColor("red");
-  };
   return (
     <>
-      <mesh position={[...position, 0]} onClick={handleClick}>
+      <mesh position={[...position, 0]}>
         <planeGeometry args={[1, 1]} />
         <meshBasicMaterial attach="material" color={color} map={texture} />
       </mesh>
