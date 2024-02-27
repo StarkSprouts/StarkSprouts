@@ -6,9 +6,10 @@ import type { PlantType } from "@/types";
 export type PlantProps = {
   plantType: PlantType;
   position: [number, number];
+  cellIndex: number;
 };
 
-export const Plant = ({ plantType, position }: PlantProps) => {
+export const Plant = ({ plantType, position, cellIndex }: PlantProps) => {
   const { plant } = useAssets() as AssetsType;
 
   return (

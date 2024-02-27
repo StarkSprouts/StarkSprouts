@@ -23,18 +23,6 @@ export function createSystemCalls(
   { GardenCell }: ClientComponents
 ) {
   const initializeGarden = async (account: Account) => {
-    //const entityId = getEntityIdFromKeys([BigInt(account.address)]);
-
-    // TODO: figure out what this does.what is overriding?
-    /*
-    const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      // @ts-ignore
-      value: getComponentValue(GardenCell, entityId),
-    });
-    */
-
     try {
       const { transaction_hash } = await client.actions.initializeGarden({
         account,
@@ -50,25 +38,10 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
-    } finally {
-      setTimeout(() => {
-        //GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 
   const refreshGarden = async (account: Account) => {
-    const entityId = getEntityIdFromKeys([BigInt(account.address)]);
-
-    const componentValue = getComponentValue(GardenCell, entityId);
-    console.log("Component value: ", componentValue);
-
-    const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: componentValue,
-    });
-
     try {
       const { transaction_hash } = await client.actions.refreshGarden({
         account,
@@ -84,11 +57,6 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
-      GardenCell.removeOverride(gardenId);
-    } finally {
-      setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 
@@ -98,15 +66,6 @@ export function createSystemCalls(
       BigInt(account.address),
       BigInt(cellIndex),
     ]);
-
-    const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: {
-        player_address: BigInt(account.address),
-        has_rock: false, // this is telling dojo to update the value of has_rock to false
-      },
-    });
 
     try {
       const { transaction_hash } = await client.actions.removeRock({
@@ -122,13 +81,10 @@ export function createSystemCalls(
           })
         )
       );
+
+      return { transactionHash: transaction_hash };
     } catch (e) {
       console.error(e);
-      GardenCell.removeOverride(gardenId);
-    } finally {
-      setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 

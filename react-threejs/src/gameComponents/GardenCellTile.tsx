@@ -21,11 +21,18 @@ export const GardenCellTile = ({ cell }: GardenCellProps) => {
         key={cell.cell_index}
         plantType={cell.plant.plant_type}
         position={[position[0], position[1]]}
+        cellIndex={cell.cell_index}
       />
     );
   }
 
   if (cell.has_rock) {
-    return <Rock key={cell.cell_index} position={[position[0], position[1]]} />;
+    return (
+      <Rock
+        key={cell.cell_index}
+        position={[position[0], position[1]]}
+        cellIndex={cell.cell_index}
+      />
+    );
   }
 };
