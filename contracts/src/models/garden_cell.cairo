@@ -14,7 +14,7 @@ struct GardenCell {
 
 trait GradenCellTrait {
     /// Get the status of the garden cell
-    fn plot_status(ref self: GardenCell) -> PlotStatus;
+    fn plot_status(self: @GardenCell) -> PlotStatus;
     /// Plant a seed in the garden cell
     fn plant_seed(ref self: GardenCell, seed_id: u256, cell_index: u16);
     /// Set if there is a rock in plot or not
@@ -32,12 +32,12 @@ enum PlotStatus {
 
 impl GardenCellImpl of GradenCellTrait {
     /// Get the status of the garden cell
-    fn plot_status(ref self: GardenCell) -> PlotStatus {
-        if self.has_rock {
+    fn plot_status(self: @GardenCell) -> PlotStatus {
+        if *self.has_rock {
             PlotStatus::Rock
-        } else if self.plant.is_dead {
+        } else if *self.plant.is_dead {
             PlotStatus::DeadPlant
-        } else if self.plant.plant_type == PlantType::None {
+        } else if *self.plant.plant_type == PlantType::None {
             PlotStatus::Empty
         } else {
             PlotStatus::AlivePlant
