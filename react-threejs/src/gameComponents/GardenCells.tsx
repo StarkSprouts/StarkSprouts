@@ -3,12 +3,13 @@ import { useElementStore } from "@/store";
 import { Has, defineSystem } from "@dojoengine/recs";
 import type { GardenCellType } from "@/types";
 import { useGardenStore } from "@/stores/gardenStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GardenCellTile } from "./GardenCellTile";
 import { getComponentValue } from "@dojoengine/recs";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
 
 export const GardenCells = () => {
+  const [gardenCells, setGardenCells] = useState<GardenCellType[]>([]);
   const {
     account: { account },
     setup: {
@@ -16,37 +17,34 @@ export const GardenCells = () => {
     },
   } = useDojo();
 
-  /*
-  const garden = useComponentValue(
-    GardenCell,
-    getEntityIdFromKeys([BigInt(account.address), BigInt(224)])
-  );
-  console.log("Local garden cell: ", localGardenCell);
-  */
+  useEffect(() => {
+    const getAllGardenCells = () => {
+      let cells: GardenCellType[] = [];
+      for (let i = 0; i <= 224; i++) {
+        const entityId = getEntityIdFromKeys([
+          BigInt(account.address),
+          BigInt(i),
+        ]);
 
-  const getAllGardenCells = () => {
-    let gardenCells: GardenCellType[] = [];
-    for (let i = 0; i <= 224; i++) {
-      const entityId = getEntityIdFromKeys([
-        BigInt(account.address),
-        BigInt(i),
-      ]);
+        const cell = getComponentValue(GardenCell, entityId);
 
-      const cell = getComponentValue(GardenCell, entityId);
+        cells.push(cell);
+      }
 
-      gardenCells.push(cell);
-    }
+      setGardenCells(cells);
+    };
 
-    return gardenCells;
-  };
+    getAllGardenCells();
+  }, [account]);
 
-  const localGardenCells = getAllGardenCells();
-
+  if (gardenCells.length === 0) {
+    return null;
+  }
   return (
     <>
       {
         // get all the garden cells and render them
-        Object.values(localGardenCells).map((cell: GardenCellType) => {
+        Object.values(gardenCells).map((cell: GardenCellType) => {
           return <GardenCellTile key={cell.cell_index} cell={cell} />;
         })
       }
