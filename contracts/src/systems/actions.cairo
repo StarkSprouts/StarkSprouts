@@ -49,6 +49,9 @@ trait IActions<TContractState> {
     fn get_garden_cells(
         self: @TContractState, player: ContractAddress, cell_indexes: Array<u16>
     ) -> Array<GardenCell>;
+
+    /// Get a plant from a garden cell
+    fn get_plant(self: @TContractState, player: ContractAddress, cell_index: u16) -> Plant;
 // get garden cells, 
 
 // get ...
@@ -86,6 +89,8 @@ mod actions {
     const TIME_FOR_PLANT_TO_HARVEST: u64 = 5; // seconds
 
 
+    // todo: check when harvest is on a plant that state says is alibe but should be dead
+
     /// Internal ///
     #[generate_trait]
     impl Private of PrivateTrait {
@@ -119,12 +124,17 @@ mod actions {
 
         /// Refresh a plot by lowering the plant's water level, updating 
         /// its growth stage (if necessary), and marking the plant harvested (if necessary)
-        fn _refresh_plot(ref self: ContractState, cell_index: u16) {
+        fn _refresh_plot(
+            ref self: ContractState, cell_index: u16
+        ) { // if you call this on a plant that should be dead, nothing happens 
             self.assert_cell_index_in_bounds(cell_index);
             let world = self.world_dispatcher.read();
             let player = get_caller_address();
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-            /// If there is an alive plant in the cell, update its water level and growth, need a way to set 
+            /// If there is an alive plant in the cell, update its water level and growth,
+            /// If the plant is dead, nothing happens
+            /// If the plant should be dead, this handles it
+            // need to update_growth on plant that should be dead but isnt yet
             if (garden_cell.plot_status() == PlotStatus::AlivePlant) {
                 /// Update the plants growth stage and water level
                 garden_cell.plant.update_growth();
@@ -225,6 +235,12 @@ mod actions {
                 }
             };
             garden_cells
+        }
+
+        fn get_plant(self: @ContractState, player: ContractAddress, cell_index: u16) -> Plant {
+            let world = self.world_dispatcher.read();
+            let garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+            garden_cell.plant
         }
 
 
@@ -330,9 +346,7 @@ mod actions {
         fn refresh_plot(ref self: ContractState, cell_index: u16) {
             self.assert_player_has_garden();
             self.assert_cell_index_in_bounds(cell_index);
-            let world = self.world_dispatcher.read();
-            let player = get_caller_address();
-            let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
+
             self._refresh_plot(cell_index);
         }
 
