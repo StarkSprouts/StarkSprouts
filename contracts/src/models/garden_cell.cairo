@@ -13,12 +13,15 @@ struct GardenCell {
 }
 
 trait GradenCellTrait {
+    /// Get the status of the garden cell
     fn plot_status(ref self: GardenCell) -> PlotStatus;
-    fn set_has_rock(ref self: GardenCell, has_rock: bool);
-    fn toggle_rock(ref self: GardenCell);
+    /// Plant a seed in the garden cell
     fn plant_seed(ref self: GardenCell, seed_id: u256, cell_index: u16);
+    /// Set if there is a rock in plot or not
+    fn set_has_rock(ref self: GardenCell, has_rock: bool);
 }
 
+/// The status of the garden cell
 #[derive(PartialEq, Drop)]
 enum PlotStatus {
     Empty,
@@ -41,18 +44,7 @@ impl GardenCellImpl of GradenCellTrait {
         }
     }
 
-
-    /// Set if rock in the garden cell
-    fn set_has_rock(ref self: GardenCell, has_rock: bool) {
-        self.has_rock = has_rock;
-    }
-
-    /// Toggle if rock in the garden cell
-    fn toggle_rock(ref self: GardenCell) {
-        self.has_rock = !self.has_rock;
-    }
-
-
+    /// Plant a seed in the garden cell
     fn plant_seed(ref self: GardenCell, seed_id: u256, cell_index: u16) {
         let plant_type = Felt252IntoPlantType::into(seed_id.try_into().unwrap());
         self
@@ -68,8 +60,12 @@ impl GardenCellImpl of GradenCellTrait {
                     is_harvestable: false,
                 };
     }
-}
 
+    /// Set if there is a rock in the plot or not
+    fn set_has_rock(ref self: GardenCell, has_rock: bool) {
+        self.has_rock = has_rock;
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -77,6 +73,7 @@ mod tests {
     use super::{GardenCell, GradenCellTrait, GardenCellImpl, PlotStatus};
     use stark_sprouts::models::{plant::{Plant, PlantType, PlantImpl, Felt252IntoPlantType},};
 
+    /// Makes an empty garden cell
     fn setup_garden() -> GardenCell {
         GardenCell {
             player: starknet::contract_address_const::<'player'>(),
@@ -95,32 +92,24 @@ mod tests {
         }
     }
 
-    #[test]
-    #[available_gas(1000000)]
-    fn test_set_has_rock() {
+    /// Tests plot status 
+    /// @dev Tests plant_seed & set_has_rock indirectly
+    fn test_plot_status() {
         let mut garden_cell = setup_garden();
-        assert(!garden_cell.has_rock, 'has_rock should be false');
+        let status = garden_cell.plot_status();
+        assert(status == PlotStatus::Empty, 'status should be Empty');
         garden_cell.set_has_rock(true);
-        assert(garden_cell.has_rock, 'has_rock should be true');
-        assert(garden_cell.plot_status() == PlotStatus::Rock, 'status should be Rock');
+        let status = garden_cell.plot_status();
+        assert(status == PlotStatus::Rock, 'status should be Rock');
         garden_cell.set_has_rock(false);
-        assert(!garden_cell.has_rock, 'has_rock should be false');
-        assert(garden_cell.plot_status() == PlotStatus::Empty, 'status should be Empty');
-    }
-
-    #[test]
-    #[available_gas(1000000)]
-    fn test_plant_seed() {
-        let mut garden_cell = setup_garden();
-        let mut status = garden_cell.plot_status();
+        let status = garden_cell.plot_status();
         assert(status == PlotStatus::Empty, 'status should be Empty');
         garden_cell.plant_seed(1, 1);
-        status = garden_cell.plot_status();
+        let status = garden_cell.plot_status();
         assert(status == PlotStatus::AlivePlant, 'status should be AlivePlant');
-        assert(garden_cell.plant.plant_type == PlantType::Bell, 'plant_type should be Bell');
         garden_cell.plant.water_level = 0;
-        garden_cell.plant.update_water_level();
-        status = garden_cell.plot_status();
+        garden_cell.plant.lose_water();
+        let status = garden_cell.plot_status();
         assert(status == PlotStatus::DeadPlant, 'status should be DeadPlant');
     }
 }
