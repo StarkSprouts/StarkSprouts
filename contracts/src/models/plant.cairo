@@ -81,13 +81,20 @@ impl PlantImpl of PlantTrait {
 
     /// Top off the plants water level
     fn water_plant(ref self: Plant) {
-        self.water_level = 100;
-        self.last_water_date = get_block_timestamp();
         self.update_growth();
+
+        self.water_level = 100; /// moved from below, 
+        self.last_water_date = get_block_timestamp();
+        // self.update_growth();
+        'after grow in watere'.print();
+        self.growth_stage.print();
     }
 
     /// Plant loses water over time
     fn lose_water(ref self: Plant) {
+        assert(self.plant_type != PlantType::None, 'No plant here');
+        assert(!self.is_dead, 'Plant is dead');
+
         let time_since_last_water = get_block_timestamp() - self.last_water_date;
         let water_loss: u64 = (time_since_last_water / WATER_TIME_UNIT) * WATER_LOSS_RATE;
 
@@ -100,44 +107,62 @@ impl PlantImpl of PlantTrait {
         }
     }
 
-    /// Updates the state of the plant
+    /// Updates plant's state based on time since last interaction
     fn update_growth(ref self: Plant) {
+        // 'update_growth'.print();
+        // self.growth_stage.print();
+        /// Plant loses water over time
+
+        'updating from'.print();
+        self.growth_stage.print();
         self.lose_water();
-        /// If adult plant
         let current_growth_stage = self.growth_stage;
-
-        if current_growth_stage == self.get_max_growth_level() {
-            /// If plant is ready for harvest
-            let time_since_last_harvest = get_block_timestamp() - self.last_harvest_date;
-            if time_since_last_harvest >= TIME_FOR_PLANT_TO_GROW {
-                self.is_harvestable = true;
+        let max_growth_stage = self.get_max_growth_level();
+        /// If plant is dead, no need to update growth
+        if self.is_dead {
+            return;
+        } /// If adult plant, 
+        else if current_growth_stage == max_growth_stage {
+            // If plant just became an adult,
+            if self.last_harvest_date == 0 {
+                'new adult'.print();
+                self.last_harvest_date = get_block_timestamp();
+            } /// Been an adult, check if it's harvestable
+            else {
+                // 'been adult'.print();
+                let time_since_last_harvest = get_block_timestamp() - self.last_harvest_date;
+                if time_since_last_harvest >= TIME_FOR_PLANT_TO_GROW {
+                    self.is_harvestable = true;
+                }
             }
-        } /// If juvenile plant
+        } /// If juvenile plant, calculate is growth stage from birth
         else {
+            /// How old is the plant 
             let time_since_planted = get_block_timestamp() - self.planted_date;
+            /// What growth stage should the plant be at
             let mut calculated_growth_stage = time_since_planted / TIME_FOR_PLANT_TO_GROW;
-            let max_growth_stage = self.get_max_growth_level();
-
+            /// @dev Limit growth stage to max 
             if calculated_growth_stage > max_growth_stage.into() {
                 calculated_growth_stage = max_growth_stage.into();
             }
-
-            /// Is there a change in growth stage ? 
+            /// Is there any changes to the growth stage
             if calculated_growth_stage != current_growth_stage.into() {
-                /// If new growth stage is less than max growth stage, update growth stage
-                if calculated_growth_stage < max_growth_stage.into() {
-                    self.growth_stage = calculated_growth_stage.try_into().unwrap();
-                } /// If new growth stage is max growth stage, update growth stage and set plant to harvestable
-                else {
-                    self.growth_stage = max_growth_stage;
-                    /// @dev Needed for logic. Without this, the plant becomes immediately harvesable after 
-                    /// reaching the max growth stage, when they must wait TIME_FOR_PLANT_TO_GROW
-                    self
-                        .last_harvest_date =
-                            get_block_timestamp(); // this might be causing issues , if plant watered when no harvest, timer is set back to 0
-                }
+                /// Update growth stage
+                self.growth_stage = calculated_growth_stage.try_into().unwrap();
+            // if calculated_growth_stage < max_growth_stage.into() {
+            //     self.growth_stage = calculated_growth_stage.try_into().unwrap();
+            // } /// If new growth stage is max growth stage, update growth stage and set plant to harvestable
+            // else {
+            //     self.growth_stage = max_growth_stage;
+            //     /// @dev Needed for logic. Without this, the plant becomes immediately harvesable after 
+            //     /// reaching the max growth stage, when they must wait TIME_FOR_PLANT_TO_GROW
+            //     self
+            //         .last_harvest_date =
+            //             get_block_timestamp(); // this might be causing issues , if plant watered when no harvest, timer is set back to 0
+            // }
             }
         }
+    // self.growth_stage.print();
     }
 
     /// Harvest the plant if it's ready
@@ -295,33 +320,49 @@ mod tests {
     fn test_update_growth_level_to_harvest_and_beyond() {
         let mut plant = timed_plant();
 
+        let max_growth_level = plant.get_max_growth_level();
+        let time_to_grow = 3;
+        let time_to_harvest = 5;
+
         assert(plant.growth_stage == 0, 'Growth stage should be 0');
+        assert(plant.last_harvest_date == 0, 'Last harvested time wrong0');
+        // plant.update_growth();
 
-        plant.update_growth();
+        // set_block_timestamp(get_block_timestamp() + time_to_grow);
+        // plant.update_growth();
+        // assert(plant.growth_stage == 1, 'Growth stage should be 1');
 
-        set_block_timestamp(get_block_timestamp() + 3);
-        plant.update_growth();
-        assert(plant.growth_stage == 1, 'Growth stage should be 1');
+        // set_block_timestamp(get_block_timestamp() + time_to_grow + time_to_grow);
+        // plant.update_growth();
+        // assert(plant.growth_stage == 3, 'Growth stage should be 3');
 
-        set_block_timestamp(get_block_timestamp() + 6);
-        plant.update_growth();
-        assert(plant.growth_stage == 3, 'Growth stage should be 3');
-
-        set_block_timestamp(get_block_timestamp() + 2);
-        plant.update_growth();
-        assert(plant.growth_stage == 3, 'Growth stage should be 3');
+        // set_block_timestamp(get_block_timestamp() + time_to_grow - 1);
+        // plant.update_growth();
+        // assert(plant.growth_stage == 3, 'Growth stage should be 3');
+        // set_block_timestamp(get_block_timestamp() + 1);
+        // plant.update_growth();
 
         loop {
-            set_block_timestamp(get_block_timestamp() + 3);
-            plant.water_plant();
-            if plant.growth_stage == 14 {
+            // 'from'.print();
+            // plant.growth_stage.print();
+            if plant.growth_stage == max_growth_level {
                 break;
             }
+            set_block_timestamp(get_block_timestamp() + time_to_grow);
+            plant.water_plant();
+        // 'to'.print();
+        // plant.growth_stage.print();
         };
-        assert(plant.growth_stage == 14, 'Growth stage should be 14');
+
+        assert(plant.growth_stage == max_growth_level, 'Growth stage should be max');
         assert(!plant.is_harvestable, 'Should not be harvestable');
 
-        set_block_timestamp(get_block_timestamp() + 2);
+        plant.last_harvest_date.print();
+        get_block_timestamp().print();
+
+        assert(plant.last_harvest_date == get_block_timestamp(), 'Last harvested time wrong1');
+
+        set_block_timestamp(get_block_timestamp() + time_to_harvest - 1);
         plant.water_plant();
         assert(!plant.is_harvestable, 'Should not be harvestable');
 
@@ -333,7 +374,7 @@ mod tests {
         plant.water_plant();
         plant.harvest();
         assert(!plant.is_harvestable, 'Should not be harvestable');
-        assert(plant.last_harvest_date == get_block_timestamp(), 'Last harvested time wrong');
+        assert(plant.last_harvest_date == get_block_timestamp(), 'Last harvested time wrong2');
     }
 
     #[test]
