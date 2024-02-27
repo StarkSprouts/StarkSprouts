@@ -29,16 +29,14 @@ trait IActions<TContractState> {
     ) -> Array<GardenCell>;
     /// Get a plant from a garden cell
     fn get_plant(self: @TContractState, player: ContractAddress, cell_index: u16) -> Plant;
-    /// Set seed token address lookups
-    fn set_token_lookups(
-        ref self: TContractState, seed_addresses: Array<starknet::ContractAddress>
-    );
 
     /// Writes ///
 
     /// Initialize a garden for the player with random rocks and mint the player some seeds
     fn initialize_garden(ref self: TContractState);
-    /// Remove a rock from the garden
+    /// Delete a player's garden
+    fn delete_garden(ref self: TContractState);
+    /// Start removal process for a rock 
     fn remove_rock(ref self: TContractState, cell_index: u16);
     /// Plants the seed type at the given garden index
     fn plant_seed(ref self: TContractState, seed_id: u256, cell_index: u16);
@@ -56,6 +54,10 @@ trait IActions<TContractState> {
     /// @dev This is the main entry point being used as of now, refresh plot(s) 
     /// is more optimal but frontend speeedbumps stopped us from getting to use it. 
     fn refresh_garden(ref self: TContractState);
+    /// Set seed token address lookups
+    fn set_token_lookups(
+        ref self: TContractState, seed_addresses: Array<starknet::ContractAddress>
+    );
 }
 
 #[dojo::contract]
@@ -271,6 +273,26 @@ mod actions {
                     },
                     Option::None => { break; }
                 };
+            };
+        }
+
+        fn delete_garden(ref self: ContractState) {
+            let world = self.world_dispatcher.read();
+            let player = get_caller_address();
+            let mut player_stats: PlayerStats = get!(world, (player), (PlayerStats,));
+            delete!(world, (player_stats,));
+
+            /// loop through all cells and delete item 
+            let mut i = 0;
+            loop {
+                if i >= (DIM * DIM) {
+                    break;
+                }
+                let mut garden_cell: GardenCell = get!(world, (player, i), (GardenCell,));
+                garden_cell.set_has_rock(false);
+                garden_cell.plant.reset();
+                set!(world, (garden_cell,));
+                i += 1;
             };
         }
 
