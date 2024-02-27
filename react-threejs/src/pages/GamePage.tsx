@@ -34,7 +34,7 @@ export default function GamePage() {
     setInitialized(true);
   };
 
-  if (playerStats && !hasGarden) {
+  if (!playerStats || (playerStats && !hasGarden)) {
     return (
       <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
         <StyledButton onPress={handleInitGarden}>

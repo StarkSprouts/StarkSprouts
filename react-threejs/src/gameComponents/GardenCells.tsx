@@ -52,11 +52,13 @@ export const GardenCells = () => {
   if (!gardenCells || gardenCells.length === 0) {
     return null;
   }
+
   if (!account) return null;
+
   return (
     <>
       {
-        // get all the garden cells and render them
+        // get all the garden cells angard render them
         Object.values(gardenCells).map((cell: GardenCellType) => {
           return <GardenCellTile key={cell.cell_index} cell={cell} />;
         })
