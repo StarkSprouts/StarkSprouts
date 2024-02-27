@@ -20,6 +20,8 @@ export default function GamePage() {
   const handleInitGarden = async () => {
     console.log("init world");
     await initializeGarden(account);
+    // add a delay to allow the garden to be initialized
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     setGardenInitialized(true);
   };
 
