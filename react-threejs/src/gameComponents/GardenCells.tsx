@@ -7,8 +7,13 @@ import { useEffect, useState } from "react";
 import { GardenCellTile } from "./GardenCellTile";
 import { getComponentValue } from "@dojoengine/recs";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
+import { PlantType } from "@/types";
 
-export const GardenCells = () => {
+export type GardenCellsProps = {
+  selectedSeed: PlantType;
+};
+
+export const GardenCells = ({ selectedSeed }: GardenCellsProps) => {
   const [gardenCells, setGardenCells] = useState<GardenCellType[]>([]);
   const {
     account: { account },
@@ -60,7 +65,13 @@ export const GardenCells = () => {
       {
         // get all the garden cells angard render them
         Object.values(gardenCells).map((cell: GardenCellType) => {
-          return <GardenCellTile key={cell.cell_index} cell={cell} />;
+          return (
+            <GardenCellTile
+              key={cell.cell_index}
+              cell={cell}
+              selectedSeed={selectedSeed}
+            />
+          );
         })
       }
     </>

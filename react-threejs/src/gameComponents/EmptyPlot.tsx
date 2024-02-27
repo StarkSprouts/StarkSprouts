@@ -5,9 +5,14 @@ import { PlantType } from "@/types";
 export type EmptyPlotProps = {
   position: [number, number];
   cellIndex: number;
+  selectedSeed: PlantType;
 };
 
-export const EmptyPlot = ({ position, cellIndex }: EmptyPlotProps) => {
+export const EmptyPlot = ({
+  position,
+  cellIndex,
+  selectedSeed,
+}: EmptyPlotProps) => {
   const {
     account: { account },
     setup: {
@@ -20,13 +25,7 @@ export const EmptyPlot = ({ position, cellIndex }: EmptyPlotProps) => {
   const handleEmptyCellClick = async () => {
     console.log("Empty cell clicked");
 
-    // hardcoding plant type to 1 for now
-
-    // choose random int from the array of plant types
-    const plantTypes = [PlantType.Bell, PlantType.Sprout, PlantType.Salvia];
-    const plantType = plantTypes[Math.floor(Math.random() * plantTypes.length)];
-
-    await plantSeed(account, plantType, 0, cellIndex);
+    await plantSeed(account, selectedSeed, 0, cellIndex);
     console.log("Seed planted");
   };
 

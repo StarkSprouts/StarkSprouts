@@ -48,8 +48,7 @@ export const Tile = ({ type, position }: TileProps) => {
   switch (type as TileType) {
     case TileType.Grass:
       // randomly choose a grass texture
-      const grassTextures = [grass1, grass2, grass3, grass4];
-      texture = grassTextures[Math.floor(Math.random() * grassTextures.length)];
+      texture = grass2;
       break;
     case TileType.Plot:
       texture = plot;

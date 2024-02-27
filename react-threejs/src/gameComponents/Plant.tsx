@@ -10,6 +10,8 @@ export type PlantProps = {
   position: [number, number];
   cellIndex: number;
   growthStage: number;
+  isDead: boolean;
+  waterLevel: number;
 };
 
 export const Plant = ({
@@ -17,6 +19,8 @@ export const Plant = ({
   position,
   cellIndex,
   growthStage,
+  isDead,
+  waterLevel,
 }: PlantProps) => {
   const {
     account: { account },
@@ -35,11 +39,14 @@ export const Plant = ({
     setIsHovered(false);
   };
 
-  const handleWaterPlant = () => {
-    waterPlant(account, cellIndex);
+  const handleWaterPlant = async () => {
+    await waterPlant(account, cellIndex);
+    console.log("watering plant", cellIndex);
   };
 
   const texture = getPlantTexture(plantType, plantTextures, growthStage);
+
+  if (isDead) return null;
 
   return (
     <mesh

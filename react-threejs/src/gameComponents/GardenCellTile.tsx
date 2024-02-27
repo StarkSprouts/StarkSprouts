@@ -6,16 +6,18 @@ import { getGardenPositionByCell } from "@/utils/gridHelper";
 import { Plant } from "@/gameComponents/Plant";
 import { Rock } from "@/gameComponents/Rock";
 import { EmptyPlot } from "./EmptyPlot";
+import { PlantType } from "@/types";
 
 export type GardenCellProps = {
   cell: GardenCellType;
+  selectedSeed: PlantType;
 };
 
-export const GardenCellTile = ({ cell }: GardenCellProps) => {
+export const GardenCellTile = ({ cell, selectedSeed }: GardenCellProps) => {
   const position = getGardenPositionByCell(cell.cell_index);
   //console.log("cell", cell);
 
-  if (cell.plant.plant_type && !cell.plant.is_dead) {
+  if (cell.plant.plant_type) {
     console.log("plant", cell.plant.plant_type);
     return (
       <Plant
@@ -24,6 +26,8 @@ export const GardenCellTile = ({ cell }: GardenCellProps) => {
         position={[position[0], position[1]]}
         cellIndex={cell.cell_index}
         growthStage={cell.plant.growth_stage}
+        isDead={cell.plant.is_dead}
+        // add a background color to represent the water level
       />
     );
   }
@@ -43,6 +47,7 @@ export const GardenCellTile = ({ cell }: GardenCellProps) => {
       key={cell.cell_index}
       position={[position[0], position[1]]}
       cellIndex={cell.cell_index}
+      selectedSeed={selectedSeed}
     />
   );
 };
