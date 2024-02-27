@@ -51,5 +51,24 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
+    PlayerStats: (() => {
+      return defineComponent(
+        world,
+        {
+          player: RecsType.BigInt,
+          has_garden: RecsType.Boolean,
+          rock_pending: RecsType.Boolean,
+          rock_pending_cell_index: RecsType.Number,
+          rock_removal_started_date: RecsType.Number,
+        },
+        {
+          metadata: {
+            name: "PlayersStats",
+            types: ["contractaddress", "bool", "bool", "u16", "u64"],
+            customTypes: [],
+          },
+        }
+      );
+    })(),
   };
 }

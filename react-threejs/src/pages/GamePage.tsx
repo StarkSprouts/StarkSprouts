@@ -5,40 +5,58 @@ import { GardenCells } from "@/gameComponents/GardenCells";
 import { useDojo } from "@/dojo/useDojo";
 import { StyledButton } from "@/components/StyledButton";
 import { useState } from "react";
+import { useEffect } from "react";
+import {
+  getEntityIdFromKeys,
+  parseComponentValueFromGraphQLEntity,
+} from "@dojoengine/utils";
+import { getComponentValue } from "@dojoengine/recs";
+import type { PlayerStatsType } from "@/types";
+import { usePlayerStats } from "@/hooks/usePlayerStats";
 
 export default function GamePage() {
   const [width, height] = useWindowSize();
-  const [gardenInitialized, setGardenInitialized] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
   const {
     account: { account },
     setup: {
-      clientComponents: { GardenCell },
+      clientComponents: { GardenCell, PlayerStats },
       systemCalls: { initializeGarden, refreshGarden },
     },
   } = useDojo();
 
+  const { playerStats, rockRemovalPending, hasGarden } = usePlayerStats();
+
   const handleInitGarden = async () => {
     console.log("init world");
     await initializeGarden(account);
-    // add a delay to allow the garden to be initialized
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setGardenInitialized(true);
+    setInitialized(true);
   };
 
-  if (!gardenInitialized) {
+  if (playerStats && !hasGarden) {
     return (
-      <div className="absolute z-10 top-5 left-2 flex flex-col space-y-2">
-        <StyledButton label="Init Garden" onPress={handleInitGarden} />
+      <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
+        <StyledButton onPress={handleInitGarden}>
+          Initialize Garden
+        </StyledButton>
       </div>
     );
   }
 
   return (
-    <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
-      <Game canvasWidth={width} canvasHeight={height}>
-        <WorldScene />
-        <GardenCells />
-      </Game>
-    </div>
+    <>
+      {rockRemovalPending[0] && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 text-white z-10">
+          <p>Removing rock...</p>
+        </div>
+      )}
+      <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
+        <Game canvasWidth={width} canvasHeight={height}>
+          <WorldScene />
+          <GardenCells />
+        </Game>
+      </div>
+    </>
   );
 }

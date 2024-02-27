@@ -314,7 +314,7 @@ mod actions {
                 random_int = random_seed.into();
                 let token_id: u256 = ((random_int % NUMBER_OF_PLANT_ASSETS.into()) + 1);
                 /// Mint the seed
-                // self.mint_seed(token_id); // todo add back
+                //self.mint_seed(token_id); // todo add back
                 i += 1;
             }
         }
@@ -440,7 +440,7 @@ mod actions {
             self.assert_plot_is_empty(ref garden_cell);
 
             /// Burn the seed token
-            // self.burn_seed(seed_id);
+            //self.burn_seed(seed_id);
             /// Plant the seed
             garden_cell.plant_seed(seed_id, cell_index);
 
@@ -463,7 +463,7 @@ mod actions {
             let seed_id: felt252 = garden_cell.plant.plant_type.into();
 
             garden_cell.plant.harvest();
-            // self.mint_seed(seed_id.into());
+            //self.mint_seed(seed_id.into());
 
             set!(world, (garden_cell,));
         }

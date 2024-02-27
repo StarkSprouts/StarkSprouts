@@ -10,10 +10,6 @@ import { ContractComponents } from "./generated/contractComponents";
 import type { IWorld } from "./generated/generated";
 import type { BigNumberish } from "starknet";
 import { uuid } from "@latticexyz/utils";
-import { PlantType } from "@/types";
-import { useGardenStore } from "@/stores/gardenStore";
-import { getComponentValue } from "@dojoengine/recs";
-import { GardenCellType } from "@/types";
 
 export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
@@ -94,21 +90,6 @@ export function createSystemCalls(
       BigInt(cellIndex),
     ]);
 
-    const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: {
-        player_address: BigInt(account.address),
-        plant: {
-          plant_type: 0, // NOTE: what is dead plant state?
-          water_level: 0,
-          growth_stage: 0,
-          planted_at: 0,
-          last_watered: 0,
-        },
-      },
-    });
-
     try {
       const { transaction_hash } = await client.actions.removeDeadPlant({
         account,
@@ -125,11 +106,6 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
-      GardenCell.removeOverride(gardenId);
-    } finally {
-      setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 
@@ -140,19 +116,6 @@ export function createSystemCalls(
     ]);
 
     const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: {
-        player_address: BigInt(account.address),
-        plant: {
-          plant_type: 0,
-          water_level: 100,
-          growth_stage: 0,
-          planted_at: 0,
-          last_watered: 0, // TODO: set to "now" here?
-        },
-      },
-    });
     try {
       const { transaction_hash } = await client.actions.waterPlant({
         account,

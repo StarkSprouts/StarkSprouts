@@ -49,9 +49,10 @@ export const GardenCells = () => {
     return () => clearInterval(interval);
   }, [account]);
 
-  if (gardenCells.length === 0) {
+  if (!gardenCells || gardenCells.length === 0) {
     return null;
   }
+  if (!account) return null;
   return (
     <>
       {
