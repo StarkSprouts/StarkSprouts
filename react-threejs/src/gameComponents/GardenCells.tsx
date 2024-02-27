@@ -21,6 +21,7 @@ export const GardenCells = () => {
   useEffect(() => {
     const getAllGardenCells = async () => {
       // refresh the garden cells before rendering them
+      await refreshGarden(account);
 
       let cells: GardenCellType[] = [];
       for (let i = 0; i <= 224; i++) {
