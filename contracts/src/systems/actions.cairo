@@ -196,6 +196,7 @@ mod actions {
                 let mut garden_cell: GardenCell = get!(world, (player, i), (GardenCell,));
                 garden_cell.set_has_rock(false);
                 set!(world, (garden_cell,));
+                i += 1;
             };
             /// Place the rocks in the garden
             let mut i = 0;
