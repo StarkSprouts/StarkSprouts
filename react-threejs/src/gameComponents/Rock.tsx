@@ -2,13 +2,18 @@ import { useAssets } from "./AssetLoader";
 
 import type { AssetsType } from "./Tile";
 
-export const Rock = () => {
-  const { rock } = useAssets() as AssetsType;
+export type RockProps = {
+  position: [number, number];
+};
+
+export const Rock = ({ position }: RockProps) => {
+  // TODO: Add a rock asset
+  //const { rock } = useAssets() as AssetsType;
 
   return (
-    <mesh position={[0, 0, 0]}>
-      <planeBufferGeometry args={[1, 1]} />
-      <meshBasicMaterial attach="material" map={rock} />
+    <mesh position={[position[0], position[1], 0]}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial attach="material" color="black" />
     </mesh>
   );
 };
