@@ -8,6 +8,7 @@ mod models {
     mod plant;
     mod token_lookups;
     mod seed_interface;
+    mod world_init;
 }
 
 // mod token {
