@@ -56,6 +56,10 @@ trait IActions<TContractState> {
     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
     fn refresh_garden(self: @TContractState);
+
+    /// Get the token lookups for the given seed id
+    // fn get_token_lookups(self: @TContractState) -> Array<ContractAddress>;
+
     /// Get the player's stats 
     fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
     /// Get a garden cell 
@@ -162,7 +166,6 @@ mod actions {
             /// If there is a pending rock try to remove it
             let cell_index = player_stats.rock_pending_cell_index;
             let mut garden_cell: GardenCell = get!(world, (player, cell_index), (GardenCell,));
-
             player_stats.finish_rock_removal();
             garden_cell.set_has_rock(false);
 

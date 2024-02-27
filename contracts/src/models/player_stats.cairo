@@ -36,15 +36,19 @@ impl PlayerStatsImpl of PlayerStatsTrait {
 
     /// Finish the rock removal process
     fn finish_rock_removal(ref self: PlayerStats) {
-        assert(self.rock_pending, 'No rock removal pending');
-        /// Check if rock removal is finished
-        let time_since_rock_removal_started = starknet::get_block_timestamp()
-            - self.rock_removal_started_date;
-        assert(time_since_rock_removal_started >= TIME_TO_REMOVE_ROCK, 'Rock still being removed');
+        // assert(self.rock_pending, 'No rock removal pending');
+        if self.rock_pending {
+            /// Check if rock removal is finished
+            let time_since_rock_removal_started = starknet::get_block_timestamp()
+                - self.rock_removal_started_date;
+            assert(
+                time_since_rock_removal_started >= TIME_TO_REMOVE_ROCK, 'Rock still being removed'
+            );
 
-        self.rock_pending = false;
-        self.rock_pending_cell_index = 0;
-        self.rock_removal_started_date = 0;
+            self.rock_pending = false;
+            self.rock_pending_cell_index = 0;
+            self.rock_removal_started_date = 0;
+        }
     }
 }
 
