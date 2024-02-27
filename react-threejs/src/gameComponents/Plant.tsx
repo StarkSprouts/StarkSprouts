@@ -1,5 +1,7 @@
 import { useAssets } from "./AssetLoader";
 import { AssetsType } from "./AssetLoader";
+import { useState } from "react";
+import { useDojo } from "@/dojo/useDojo";
 
 import { PlantType } from "@/types";
 
@@ -8,6 +10,58 @@ export type PlantProps = {
   position: [number, number];
   cellIndex: number;
   growthStage: number;
+};
+
+export const Plant = ({
+  plantType,
+  position,
+  cellIndex,
+  growthStage,
+}: PlantProps) => {
+  const {
+    account: { account },
+    setup: {
+      systemCalls: { waterPlant },
+    },
+  } = useDojo();
+  const plantTextures = useAssets() as AssetsType;
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleHover = () => {
+    setIsHovered(true);
+  };
+
+  const handleUnhover = () => {
+    setIsHovered(false);
+  };
+
+  const handleWaterPlant = () => {
+    waterPlant(account, cellIndex);
+  };
+
+  const texture = getPlantTexture(plantType, plantTextures, growthStage);
+
+  return (
+    <mesh
+      position={[position[0], position[1], 0]}
+      onClick={handleWaterPlant}
+      onPointerOver={handleHover}
+      onPointerOut={handleUnhover}
+    >
+      <planeGeometry args={[1.5, 1.5]} />
+      <meshBasicMaterial attach="material" map={texture} transparent />
+      {isHovered ? (
+        <meshBasicMaterial
+          attach="material"
+          transparent
+          opacity={0.5}
+          color="blue"
+        />
+      ) : (
+        <meshBasicMaterial attach="material" map={texture} transparent />
+      )}
+    </mesh>
+  );
 };
 
 const getBellTextureByGrowthStage = (
@@ -192,6 +246,8 @@ const getPlantTexture = (
   growthStage: number
 ) => {
   switch (plantType) {
+    case PlantType.None:
+      return plantTextures.grass1;
     case PlantType.Bell:
       return getBellTextureByGrowthStage(growthStage, plantTextures);
     case PlantType.Sprout:
@@ -201,22 +257,4 @@ const getPlantTexture = (
     default:
       return null;
   }
-};
-
-export const Plant = ({
-  plantType,
-  position,
-  cellIndex,
-  growthStage,
-}: PlantProps) => {
-  const plantTextures = useAssets() as AssetsType;
-
-  const texture = getPlantTexture(plantType, plantTextures, growthStage);
-
-  return (
-    <mesh position={[position[0], position[1], 0]}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial attach="material" map={texture} transparent />
-    </mesh>
-  );
 };

@@ -25,6 +25,7 @@ export type GardenCellType = {
     growth_stage: number;
     planted_at: number;
     last_watered: number;
+    is_dead: boolean;
   };
 };
 

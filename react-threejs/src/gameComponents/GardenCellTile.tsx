@@ -15,7 +15,7 @@ export const GardenCellTile = ({ cell }: GardenCellProps) => {
   const position = getGardenPositionByCell(cell.cell_index);
   //console.log("cell", cell);
 
-  if (cell.plant.plant_type) {
+  if (cell.plant.plant_type && !cell.plant.is_dead) {
     console.log("plant", cell.plant.plant_type);
     return (
       <Plant
