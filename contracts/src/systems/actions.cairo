@@ -50,15 +50,12 @@ trait IActions<TContractState> {
     fn harvest_plant(self: @TContractState, cell_index: u16);
     /// Remove a dead plant from the garden 
     fn remove_dead_plant(self: @TContractState, cell_index: u16);
-
     /// Refresh a specifc plot 
     fn refresh_plot(self: @TContractState, cell_index: u16);
     /// Refresh the state of the garden for specific cells
     fn refresh_plots(self: @TContractState, cell_indexes: Array<u16>);
     /// Refresh a player's garden state
     fn refresh_garden(self: @TContractState);
-
-
     /// Get the player's stats 
     fn get_player_stats(self: @TContractState, player: ContractAddress) -> PlayerStats;
     /// Get a garden cell 
