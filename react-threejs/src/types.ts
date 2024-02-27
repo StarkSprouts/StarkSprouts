@@ -25,5 +25,14 @@ export type GardenCellType = {
     growth_stage: number;
     planted_at: number;
     last_watered: number;
+    is_dead: boolean;
   };
+};
+
+export type PlayerStatsType = {
+  player: BigInt;
+  has_garden: number;
+  rock_pending: number;
+  rock_pending_cell_index: number;
+  rock_removal_started_date: number;
 };

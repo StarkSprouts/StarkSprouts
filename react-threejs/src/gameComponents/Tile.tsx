@@ -4,28 +4,11 @@ import { useAssets } from "@/gameComponents/AssetLoader";
 import { PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
 import { getGardenPositionByCell } from "@/utils/gridHelper";
 import { Plant } from "@/gameComponents/Plant";
+import type { AssetsType } from "@/gameComponents/AssetLoader";
 
 type TileProps = {
   type: TileType;
   position: [number, number];
-};
-
-export type AssetsType = {
-  grass1: any;
-  grass2: any;
-  grass3: any;
-  grass4: any;
-  plot: any;
-  topLeftCorner: any;
-  topRightCorner: any;
-  bottomRightCorner: any;
-  bottomLeftCorner: any;
-  leftEdge: any;
-  rightEdge: any;
-  topEdge: any;
-  bottomEdge: any;
-  plant: any;
-  rock: any;
 };
 
 export enum TileType {
@@ -58,7 +41,6 @@ export const Tile = ({ type, position }: TileProps) => {
     rightEdge,
     topEdge,
     bottomEdge,
-    plant,
   } = useAssets() as AssetsType;
 
   // Example: Add different objects based on the tile type

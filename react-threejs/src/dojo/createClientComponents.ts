@@ -12,5 +12,6 @@ export function createClientComponents({
   return {
     ...contractComponents,
     GardenCell: overridableComponent(contractComponents.GardenCell),
+    PlayerStats: overridableComponent(contractComponents.PlayerStats),
   };
 }

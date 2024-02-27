@@ -1,7 +1,7 @@
 import { useDojo } from "@/dojo/useDojo";
 import { useAssets } from "./AssetLoader";
 import { useState } from "react";
-import type { AssetsType } from "./Tile";
+import type { AssetsType } from "./AssetLoader";
 
 export type RockProps = {
   position: [number, number];
@@ -39,15 +39,14 @@ export const Rock = ({ position, cellIndex }: RockProps) => {
       onPointerOut={() => handleRockUnhover()}
     >
       <planeGeometry args={[1, 1]} />
-      {isHovered && (
+      {isHovered ? (
         <meshBasicMaterial
           attach="material"
           map={rock}
           transparent
           opacity={0.5}
         />
-      )}
-      {!isHovered && (
+      ) : (
         <meshBasicMaterial attach="material" map={rock} transparent />
       )}
     </mesh>
