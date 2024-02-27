@@ -11,7 +11,7 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        banner: "url('static/banner.png')",
+        banner: "url('../static/banner.png')",
       },
       colors: {
         border: "hsl(var(--border))",
