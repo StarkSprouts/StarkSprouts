@@ -22,6 +22,7 @@ Created at Starknet Hacker House Denver 2024
 
 The actions of our world are defined here:
 
+<img width="703" alt="Screenshot 2024-02-27 at 1 57 56 PM" src="https://github.com/StarkSprouts/StarkSprouts/assets/96356887/60d1efac-52c4-4163-b19c-825916bb7397">
 
 With these tests we assume that the game logic is working as expected on the contract side, unfortuntately we ran out of time to fully implement them into the client during the Hacker House. 
 
@@ -31,7 +32,6 @@ Along with our deployment script to deploy the world and other necessary assets/
 
 <img width="1215" alt="Screenshot 2024-02-27 at 12 04 05 PM" src="https://github.com/StarkSprouts/StarkSprouts/assets/96356887/9864db83-3528-4211-863a-a8ac80490841">
 
-<img width="703" alt="Screenshot 2024-02-27 at 1 57 56 PM" src="https://github.com/StarkSprouts/StarkSprouts/assets/96356887/60d1efac-52c4-4163-b19c-825916bb7397">
 
 
    
