@@ -82,8 +82,8 @@ mod actions {
     const STARTING_SEED_COUNT: u8 = 3;
     const MAX_ROCKS_AT_SPAWN: u8 = 50;
     const NUMBER_OF_PLANT_ASSETS: u8 = 13;
-    const TIME_TO_REMOVE_ROCK: u64 = 15; // seconds
-    const TIME_FOR_PLANT_TO_HARVEST: u64 = 120; // seconds
+    const TIME_TO_REMOVE_ROCK: u64 = 5; // seconds
+    const TIME_FOR_PLANT_TO_HARVEST: u64 = 5; // seconds
 
 
     /// Internal ///
@@ -234,6 +234,7 @@ mod actions {
             let world = self.world_dispatcher.read();
             let mut world_init: WorldInit = get!(world, (0), (WorldInit,));
             world_init.init_world();
+            set!(world, (world_init,));
 
             /// Set the token lookups for each seed
             let mut i = 1_u16;
@@ -262,7 +263,7 @@ mod actions {
             /// Initializes all cells into torii
             let mut i = 0;
             loop {
-                if i == DIM * DIM {
+                if i >= (DIM * DIM) {
                     break;
                 }
                 let mut garden_cell: GardenCell = get!(world, (player, i), (GardenCell,));
@@ -445,9 +446,6 @@ mod actions {
             garden_cell.plant_seed(seed_id, cell_index);
 
             set!(world, (garden_cell));
-
-            let x: felt252 = world.contract_address.into();
-            x.print();
         // emit!(world, DeadPlantRemoved { player, garden_cell });
         }
 
