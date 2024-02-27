@@ -7,6 +7,7 @@ import { Plant } from "@/gameComponents/Plant";
 import { Rock } from "@/gameComponents/Rock";
 import { EmptyPlot } from "./EmptyPlot";
 import { PlantType } from "@/types";
+import { Soil } from "./Soil";
 
 export type GardenCellProps = {
   cell: GardenCellType;
@@ -18,17 +19,23 @@ export const GardenCellTile = ({ cell, selectedSeed }: GardenCellProps) => {
   //console.log("cell", cell);
 
   if (cell.plant.plant_type) {
-    console.log("plant", cell.plant.plant_type);
+    console.log("PLANT", cell);
     return (
-      <Plant
-        key={cell.cell_index}
-        plantType={cell.plant.plant_type}
-        position={[position[0], position[1]]}
-        cellIndex={cell.cell_index}
-        growthStage={cell.plant.growth_stage}
-        isDead={cell.plant.is_dead}
-        // add a background color to represent the water level
-      />
+      <>
+        <Plant
+          key={`${cell.cell_index}-plant`}
+          plantType={cell.plant.plant_type}
+          position={[position[0], position[1]]}
+          cellIndex={cell.cell_index}
+          growthStage={cell.plant.growth_stage}
+          isDead={cell.plant.is_dead}
+        />
+        <Soil
+          key={`${cell.cell_index}-soil`}
+          position={[position[0], position[1]]}
+          waterLevel={cell.plant.water_level}
+        />
+      </>
     );
   }
 

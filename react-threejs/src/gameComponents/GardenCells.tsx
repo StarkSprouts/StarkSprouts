@@ -50,7 +50,7 @@ export const GardenCells = ({ selectedSeed }: GardenCellsProps) => {
     // NOTE: this is not a good way to do this, but it's fine for now
     const interval = setInterval(() => {
       getAllGardenCells();
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [account]);
 
@@ -59,6 +59,8 @@ export const GardenCells = ({ selectedSeed }: GardenCellsProps) => {
   }
 
   if (!account) return null;
+
+  console.log("gardenCells", gardenCells);
 
   return (
     <>

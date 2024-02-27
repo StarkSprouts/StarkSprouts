@@ -49,6 +49,7 @@ export default function GamePage() {
   const { playerStats, rockRemovalPending, hasGarden } = usePlayerStats();
 
   const handleInitGarden = async () => {
+    setLoading(true);
     console.log("init world");
     await initializeGarden(account);
     setInitialized(true);
@@ -57,9 +58,7 @@ export default function GamePage() {
   if (!playerStats || (playerStats && !hasGarden)) {
     return (
       <div className="flex w-screen h-screen justify-center items-center bg-slate-900">
-        <StyledButton onPress={handleInitGarden}>
-          Initialize Garden
-        </StyledButton>
+        <StyledButton onPress={handleInitGarden}>Create Garden</StyledButton>
       </div>
     );
   }

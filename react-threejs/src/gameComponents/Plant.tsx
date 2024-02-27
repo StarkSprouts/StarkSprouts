@@ -1,7 +1,7 @@
 import { useAssets } from "./AssetLoader";
 import { AssetsType } from "./AssetLoader";
-import { useState } from "react";
 import { useDojo } from "@/dojo/useDojo";
+import { useState } from "react";
 
 import { PlantType } from "@/types";
 
@@ -11,7 +11,6 @@ export type PlantProps = {
   cellIndex: number;
   growthStage: number;
   isDead: boolean;
-  waterLevel: number;
 };
 
 export const Plant = ({
@@ -20,15 +19,15 @@ export const Plant = ({
   cellIndex,
   growthStage,
   isDead,
-  waterLevel,
 }: PlantProps) => {
   const {
     account: { account },
     setup: {
       systemCalls: { waterPlant },
+      contractComponents: { GardenCell },
     },
   } = useDojo();
-  const plantTextures = useAssets() as AssetsType;
+  const textures = useAssets() as AssetsType;
   const [isHovered, setIsHovered] = useState(false);
 
   const handleHover = () => {
@@ -41,10 +40,9 @@ export const Plant = ({
 
   const handleWaterPlant = async () => {
     await waterPlant(account, cellIndex);
-    console.log("watering plant", cellIndex);
   };
 
-  const texture = getPlantTexture(plantType, plantTextures, growthStage);
+  const plantTexture = getPlantTexture(plantType, textures, growthStage);
 
   if (isDead) return null;
 
@@ -55,17 +53,16 @@ export const Plant = ({
       onPointerOver={handleHover}
       onPointerOut={handleUnhover}
     >
-      <planeGeometry args={[1.5, 1.5]} />
-      <meshBasicMaterial attach="material" map={texture} transparent />
+      <planeGeometry args={[1, 1]} />
       {isHovered ? (
         <meshBasicMaterial
           attach="material"
+          map={plantTexture}
           transparent
           opacity={0.5}
-          color="blue"
         />
       ) : (
-        <meshBasicMaterial attach="material" map={texture} transparent />
+        <meshBasicMaterial attach="material" map={plantTexture} transparent />
       )}
     </mesh>
   );

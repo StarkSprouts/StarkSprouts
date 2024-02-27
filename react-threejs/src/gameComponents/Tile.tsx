@@ -83,7 +83,7 @@ export const Tile = ({ type, position }: TileProps) => {
     <>
       <mesh position={[...position, 0]}>
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial attach="material" color={color} map={texture} />
+        <meshBasicMaterial attach="material" map={texture} />
       </mesh>
     </>
   );

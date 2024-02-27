@@ -73,7 +73,7 @@ export function createSystemCalls(
         contractComponents,
         getEvents(
           await account.waitForTransaction(transaction_hash, {
-            retryInterval: 100,
+            retryInterval: 500,
           })
         )
       );
@@ -126,7 +126,7 @@ export function createSystemCalls(
         contractComponents,
         getEvents(
           await account.waitForTransaction(transaction_hash, {
-            retryInterval: 100,
+            retryInterval: 10,
           })
         )
       );
@@ -155,19 +155,6 @@ export function createSystemCalls(
 
     // TODO: need to add is is_harvested
     const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: {
-        player_address: BigInt(account.address),
-        plant: {
-          plant_type: seedLow,
-          water_level: 100,
-          growth_stage: 0,
-          planted_at: 0,
-          last_watered: 0,
-        },
-      },
-    });
 
     try {
       const { transaction_hash } = await client.actions.plantSeed({
@@ -187,11 +174,6 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
-      GardenCell.removeOverride(gardenId);
-    } finally {
-      setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 
@@ -200,21 +182,6 @@ export function createSystemCalls(
       BigInt(account.address),
       BigInt(cellIndex),
     ]);
-
-    const gardenId = uuid();
-    GardenCell.addOverride(gardenId, {
-      entity: entityId,
-      value: {
-        player_address: BigInt(account.address),
-        plant: {
-          plant_type: 0,
-          water_level: 0,
-          growth_stage: 0,
-          planted_at: 0,
-          last_watered: 0,
-        },
-      },
-    });
 
     try {
       const { transaction_hash } = await client.actions.harvestPlant({
@@ -232,11 +199,6 @@ export function createSystemCalls(
       );
     } catch (e) {
       console.error(e);
-      GardenCell.removeOverride(gardenId);
-    } finally {
-      setTimeout(() => {
-        GardenCell.removeOverride(gardenId);
-      }, 1000);
     }
   };
 
