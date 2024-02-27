@@ -21,7 +21,6 @@ mod tests {
             player_stats::TEST_CLASS_HASH,
             token_lookups::TEST_CLASS_HASH
         ];
-
         let world = spawn_test_world(models);
         let contract_address = world
             .deploy_contract('salt', actions::TEST_CLASS_HASH.try_into().unwrap());
@@ -37,8 +36,23 @@ mod tests {
     #[available_gas(10000000)]
     fn test_set_token_lookups() {
         let (world, actions, player) = setup_world();
-        let lookups: Array<ContractAddress> = array![starknet::contract_address_const::<1>(),];
-    // actions.set_token_lookups();
+        let mut lookups: Array<ContractAddress> = array![
+            starknet::contract_address_const::<1>(),
+            starknet::contract_address_const::<2>(),
+            starknet::contract_address_const::<3>(),
+            starknet::contract_address_const::<4>(),
+            starknet::contract_address_const::<5>(),
+            starknet::contract_address_const::<6>(),
+            starknet::contract_address_const::<7>(),
+            starknet::contract_address_const::<8>(),
+            starknet::contract_address_const::<9>(),
+            starknet::contract_address_const::<10>(),
+            starknet::contract_address_const::<11>(),
+            starknet::contract_address_const::<12>(),
+            starknet::contract_address_const::<13>(),
+        ];
+        actions.set_token_lookups(lookups.clone());
+    // let token_lookups = actions.get_token_lookups(); == 
     }
 // #[test]
 // #[available_gas(3000000000)]
