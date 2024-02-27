@@ -233,7 +233,7 @@ mod actions {
                 random_int = random_seed.into();
                 let token_id: u256 = ((random_int % NUMBER_OF_PLANT_ASSETS.into()) + 1);
                 /// Mint the seed
-                self.mint_seed(token_id);
+                // self.mint_seed(token_id); // todo add back
             }
         }
 

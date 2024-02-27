@@ -20,9 +20,6 @@ const account = new Account(provider, WALLET_ADDRESS, PRIVATE_KEY);
 const profile = ENVIRONMENT == "LOCAL" ? `` : `--profile slot `;
 
 /// Main ///
-
-/// Deploy all seed contracts
-/// Returns an array of deployed contract addresses
 const deploySeeds = async (dojo_address) => {
   const seedTypes = [
     "Bell",
@@ -40,34 +37,42 @@ const deploySeeds = async (dojo_address) => {
     "Zigzag",
   ];
 
-  // const constructorArgsList = [
-  //   [account.address, "SeedToken", "Bell", dojo_address],
-  //   [account.address, "SeedToken", "Bulba", dojo_address],
-  //   [account.address, "SeedToken", "Cactus", dojo_address],
-  //   [account.address, "SeedToken", "Chamomile", dojo_address],
-  //   [account.address, "SeedToken", "Fern", dojo_address],
-  //   [account.address, "SeedToken", "Lily", dojo_address],
-  //   [account.address, "SeedToken", "Mushroom", dojo_address],
-  //   [account.address, "SeedToken", "Rose", dojo_address],
-  //   [account.address, "SeedToken", "Salvia", dojo_address],
-  //   [account.address, "SeedToken", "Spiral", dojo_address],
-  //   [account.address, "SeedToken", "Sprout", dojo_address],
-  //   [account.address, "SeedToken", "Violet", dojo_address],
-  //   [account.address, "SeedToken", "Zigzag", dojo_address],
-  // ];
-
-  // for (const args of constructorArgsList) {
-  //   addresses.push(await _deployContract(args));
-  // }
-
-  let addresses = [];
-  seedTypes.forEach(async (seedType) => {
+  const promises = seedTypes.map(async (seedType) => {
     const args = [account.address, "SeedToken", seedType, dojo_address];
-    addresses.push(await _deployContract(args));
+    return await _deployContract(args);
   });
 
+  const addresses = await Promise.all(promises);
   return addresses;
 };
+
+// /// Deploy all seed contracts
+// /// Returns an array of deployed contract addresses
+// const deploySeeds = async (dojo_address) => {
+//   const seedTypes = [
+//     "Bell",
+//     "Bulba",
+//     "Cactus",
+//     "Chamomile",
+//     "Fern",
+//     "Lily",
+//     "Mushroom",
+//     "Rose",
+//     "Salvia",
+//     "Spiral",
+//     "Sprout",
+//     "Violet",
+//     "Zigzag",
+//   ];
+
+//   let addresses = [];
+//   seedTypes.forEach(async (seedType) => {
+//     const args = [account.address, "SeedToken", seedType, dojo_address];
+//     addresses.push(await _deployContract(args));
+//   });
+
+//   return addresses;
+// };
 
 /// Deploy world and set sozo auth
 const deployWorld = async () => {
@@ -147,9 +152,7 @@ const setTokenLookups = async (
   seed_addresses
 ) => {
   /// run sozo execute
-  const command = `sozo ${profile}execute ${actionsAddress} set_token_lookups --calldata ${seed_addresses.length},${seed_addresses}`;
-  //   seed_addresses.length
-  // } ${seed_addresses.join(" ")}`;
+  const command = `sozo ${profile}execute ${actionsAddress} set_token_lookups --calldata ${seed_addresses.length},${seed_addresses} --rpc-url ${NODE_URL} --account-address ${account.address} --private-key ${PRIVATE_KEY} --wait`;
 
   exec(command, (error, stdout) => {
     if (error) {
@@ -243,23 +246,29 @@ const main = async () => {
   try {
     // await deploySeeds();
 
-    let { worldAddress, actionsAddress } = await deployWorld();
+    // let { worldAddress, actionsAddress } = await deployWorld();
     /// need to wait for txn to mint for this txn
-    // await setTokenLookups(worldAddress, actionsAddress, [
-    //   "1",
-    //   "2",
-    //   "3",
-    //   "4",
-    //   "5",
-    //   "6",
-    //   "7",
-    //   "8",
-    //   "9",
-    //   "10",
-    //   "11",
-    //   "12",
-    //   "13",
-    // ]);
+    const { worldAddress, actionsAddress } = {
+      worldAddress:
+        "0x27fe4929ded46d12f37385e890f0189b7c5c08f2539c44c62b3996c547639df",
+      actionsAddress:
+        "0x144c185ad836266f64d00161d172a6f25fec82ffcfe97ba231399486d6192b3",
+    };
+    await setTokenLookups(worldAddress, actionsAddress, [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+    ]);
   } catch (error) {
     console.error(`Operation failed! Reason: ${error.message}`);
   }
